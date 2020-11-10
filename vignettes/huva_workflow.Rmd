@@ -1,0 +1,699 @@
+---
+title: "huva standard workflow - v 0.99.0"
+author: "Lorenzo Bonaguro - Schultze group"
+package: huva
+date: "`r Sys.Date()`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{huva_workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+###Introduction
+
+In the last decades, the spread of increasingly affordable transcriptomic techniques and the concomitant design of population-scale multi-omics studies produced a tremendous amount of data on healthy individuals. Within this population, genetic and environmental factors influence gene expression with no pathological consequences. Variance of gene expression, which is intrinsic of any given natural population, can be exploited to set up a conditional quasi loss- and gain-of-function approach. In this direction, the huva (human variation) package takes advantage of population-scale multi-omics data to infer gene function and relationship between phenotype and gene expression. Within a reference dataset, huva derives two experimental groups, i.e. individuals with "low" or "high" expression of the GOI, enabling the subsequent comparison of their transcriptional profile and functional parameters. This approach robustly identifies the biological relevance of a GOI and predicts the phenotype of naturally occurring loss- and gain-of-function mutations in humans.
+As an example, we shape here the analysis on the investigation of MYD88, a well-characterized immunological gene examined as proof-of-concept in our reference huva paper (Bonaguro L. et al, 2020).
+
+###Install and load huva
+
+```{r setup, warning=F}
+# if (!requireNamespace("BiocManager"))
+#   install.packages("BiocManager")
+# BiocManager::install("huva")
+
+library(huva)
+library(huva.db)
+library(useful)
+```
+
+# Exploratory huva experiment
+
+As a first exploratory step, the expression of the selected GOI is compared across specified datasets and correlated with available metadata, in order to unveil the possible influence of buried variables on gene expression. This approach provides a quick overview of GOI expression across databases and cell types, helping to shape downstream analyses.
+
+## Defining the gene name
+
+The gene name can be set as an environment variable to be automatically grabbed by all functions.
+
+```{r}
+gene_name <- "MYD88"
+```
+
+## Gene examination experiment
+
+This funtion looks into the expression of the GOI in the specified dataset or across other user-provided datasets. If the GOI is not present in the dataset, a warning message will be displayed.
+
+```{r}
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = gene_name)
+```
+
+## Explore variance in gene expression
+
+### Expression table
+
+The GOI expression table in selected datasets is exported as a data.frame reporting sample names as rownames and expression values in a single column.
+
+```{r}
+expr_exam <- get_expr_exam(huva_expression = gene_overview, study = "ImmVar", dataset = "ImmVar_CD4T")
+```
+
+Here you can visualize the dataframe format.
+
+```{r}
+head(expr_exam)
+```
+
+### Expression plot
+
+The expression of the GOI is plotted across all datasets to inspect possible distribution differences.
+
+```{r}
+expr_exam.plot <- get_expr.plot_exam(huva_expression = gene_overview, bins = 50, alpha = 1)
+```
+
+```{r}
+expr_exam.plot
+```
+
+The expression plot referred to a single dataset can be visualized from the exploratory experiment gene_overview object.
+
+```{r}
+gene_overview$plot$ImmVar_CD4T
+```
+
+## Correlation with annotated parameters
+
+In large cohort studies, several additional parameters (such as sex, age or height) associated to each donor are often provided. This allows to infer possible correlations between GOI expression and these annotated variables. We can easily perform this analysis working on the gene_overview experiment.
+
+### Annotated table
+
+First, the comprehensive table reporting all the available annotation parameters for the selected dataset is extracted from the gene_overview exploratory huva experiment.
+
+```{r}
+anno_exam <- get_anno_exam(huva_expression = gene_overview, study = "CEDAR", dataset = "CEDAR_CD4T")
+
+corner(anno_exam)
+```
+
+### Correlation statistics
+
+The get_anno.stat_exam function performs a statistical correlation between the GOI expression and each of the parameters provided in the annotation table.
+
+```{r}
+anno.stat_exam <- get_anno.stat_exam(huva_expression = gene_overview, study = "FG500", dataset = "ALL")
+
+corner(anno.stat_exam)
+```
+
+### Correlation plot
+
+Correlations can be graphically visualized with the get_anno.plot_exam function, whose format is similar to the previous one and produces an output containing a list of graphical objects.
+
+```{r}
+anno.plot_exam <- get_anno.plot_exam(huva_expression = gene_overview, study = "FG500", dataset = "FG500_PBMC")
+
+anno.plot_exam$weight
+```
+
+## Metadata investigation
+
+The most recent cohort studies generally perform a series of additional independent experiments in parallel to the transcriptome analysis. This multi-dimensionality of data allows the correlation of gene expression with phenotypical parameters typical of immune cells, such as the relative amount of each cell type or cytokines production.
+
+### Metadata table
+
+Selected databases included in this package (CERAR and 500FG) include metadata information. The correlation of gene expression with these metadata can be investigated with the get_meta_exam, get_meta.stat_exam and get_meta.plot_exam functions.
+
+```{r}
+meta.table_exam <- get_meta_exam(huva_expression = gene_overview, study = "FG500")
+
+corner(meta.table_exam$FG500_PBMC_cellcount)
+```
+
+### Metadata correlation statistics
+
+Statistical analysis of the influence of provided metadata on the GOI expression is performed by the function get_meta.stat_exam which reports it on a data.frame or list of data.frames.
+
+```{r}
+meta.stat_exam <- get_meta.stat_exam(huva_expression = gene_overview, study = "FG500", dataset = "FG500_PBMC_cellcount")
+
+corner(meta.stat_exam$FG500_PBMC_cellcount)
+```
+
+### Metadata correlation dotplot
+
+Metadata correlations are visualized in a dotplot. Also in this case, the get_meta.plot_exam function will quickly provide a list of graphical objects.
+
+```{r}
+meta.plot_exam <- get_meta.plot_exam(huva_expression = gene_overview, study = "FG500", dataset = "FG500_PBMC_cellcount")
+
+meta.plot_exam$`Monocytes (CD14+)`
+```
+
+# huva experiment
+
+The huva experiment is performed consecutively on all the included datasets. Differential expression analysis is performed using the limma R package using the experimental groups in the design model, p value correction for multiple tests and fold change cut-off for each experiment reported. GSEA within the huva function is performed with the R package fgsea with standard setting (1000 random permutations), the gene rank used for GSEA is calculated according to the log2 fold change in the comparison between the low and high groups. The results of the huva experiment are collected in a huva_experiment R object used as input for next provided functions to explore the output for each dataset.
+
+Funtion parameters to be defined:
+
+-data: huva_dataset class object.
+-quantiles: definition of the quantile of segregation of the samples, quantiles are always simmetrical between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default (quantile 0.1 will use the 10th and 90th percentiles)
+-gs_list: class list object defining gene sets to be included in the analysis (to generate this file see the documentation of fgse)
+-summ: default is TRUE, it defines if the summary of the huva experiment will be calculated.
+-datasets_list: character vector used to filter the dataset in the data object for the analysis
+-adjust.method: p value adjustment method used to correct the DE genes analysis
+
+
+```{r, warning=F}
+binned_dataset <- run_huva_experiment(data = huva.db, 
+                                      gene = gene_name, 
+                                      quantiles = 0.10, 
+                                      gs_list = hallmarks_V7.2,
+                                      summ = T, 
+                                      datasets_list = NULL, 
+                                      adjust.method = "none")
+```
+
+## Exploring the huva experiment
+
+Results of the huva experiment are stored in a "huva_experiment" object and can be easily visualized with several provided functions.
+
+### Plotting of selected genes_huva experiment
+
+The expression of selected genes in the two newly generated low- and high- groups can be plotted and can be visualized across the different dataset provided during the huva experiment.
+
+```{r}
+plot_binned <- plot_binned_gene(goi = c("CRELD1", "CRELD2", "TCF7", "RCAN3"), huva_experiment = binned_dataset)
+
+plot_binned$CEDAR_CD4T
+```
+
+### Expression table_huva experiment
+
+The expression table resulting from the huva experiment can be retrieved as data.frame with the function get_exp_huva.
+
+```{r}
+expr_huva <- get_expr_huva(huva_exp = binned_dataset, study = "FG500", dataset = "FG500_PBMC")
+
+corner(expr_huva)
+```
+
+### huva experiment annotation 
+
+#### Annotation table_huva experiment
+
+The function get_anno_huva produces a filtered annotation table including only donors belonging to the huva experiment groups.
+
+```{r}
+anno_huva <- get_anno_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(anno_huva$FG500_PBMC)
+```
+
+#### Group annotation statistics_huva experiment
+
+Differences in the annotation parameters within the two groups are statistically explored with the function get_anno.stat.huva.
+
+```{r}
+anno.stat <- get_anno.stat_huva(huva_exp = binned_dataset, study = "FG500")
+
+anno.stat$FG500_PBMC$gender
+```
+
+#### Plotting huva groups donors distribution
+
+The distribution of donors in the two huva groups is correlated to the available annotation parameters with the get_anno.plot_huva function.
+
+```{r}
+anno.plot <- get_anno.plot_huva(huva_exp = binned_dataset, study = "FG500")
+
+anno.plot$FG500_PBMC$living_situation
+```
+
+### Get DE genes between huva high- and low-groups
+
+Within each of the provided datasets, the huva experiment calculates the differentially expressed (DE) genes between the "low" and "high" groups. The DE gene list can be explored and visualized with the get_DE_huva function. In this function, the p-value (pval) and logFC (logFC) cutoffs can also be specified (default is pval=0.05 and logFC=1). Along with providing the DE genes table, this function also performs the Principal Component Analysis (PCA), which can be plotted over the desidered components (PC, default = c("PC1", "PC2")).
+
+```{r}
+DE_huva <- get_DE_huva(huva_exp = binned_dataset, study = "FG500", dataset = "FG500_PBMC")
+```
+
+The Principal Component Analysis (PCA) can be retrieved from the output of the get_DE_huva function.
+
+```{r}
+DE_huva$PCA_FG500_PBMC
+```
+
+The list of DE genes with associated statistics is then recovered.
+
+```{r}
+corner(DE_huva$FG500_PBMC)
+```
+
+A quick bar plot overview on the distribution of DE genes together with a DE genes expression heatmap are also included in the output of the get_DE_huva function.
+
+```{r}
+DE_huva$plot_FG500_PBMC
+```
+
+```{r}
+plot_HM(DE_huva$HM_FG500_PBMC)
+```
+
+### Ranked gene list_huva experiment
+
+The function get_rank_huva extracts the log2FC-ranked gene list from the comparison between the "low" and "high" groups.
+
+```{r}
+#add the normal ranking file
+rank_huva <- get_rank_huva(huva_exp = binned_dataset, study = "ImmVar", dataset = NULL, n_top_genes = 5)
+
+rank_huva$ImmVar_CD4T
+```
+
+Withing this function, a graphical representation is included.
+
+```{r}
+rank_huva$plot_ImmVar_CD4T
+```
+
+### GSEA on huva ranked gene list
+
+Gene set enrichment analysis (GSEA) is performed on user-defined huva experiment ranked lists. By default, the huva experiment works on hallmark gene sets. A table with the enrichment-associated statistics can be retrieved using the function get_gsea_huva. The function provides a Volcano plot reporting the normalized enriched score (NES) of enriched terms in x-axis with the associated -log10 p value (-log10pval) in y-axis. Set int_plot=TRUE to get also the Volcano plot interactive version.
+
+```{r}
+gsea_huva <- get_gsea_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(gsea_huva$FG500_PBMC)
+```
+
+The output of the function includes a Volcano plot reporting the normalized enriched score (NES) in x-axis and the -log10 p value (-log10pval) in y-axis.
+
+```{r}
+gsea_huva$plot_FG500_PBMC
+```
+
+If int_plot is set to TRUE, also the Volcano interactive plot will be produced which allows an easier inspection of the GSEA results.
+
+```{r}
+gsea_huva$int_plot_FG500_PBMC
+```
+
+### Metadata investigation_huva experiment
+
+Also "low" and "high" huva groups metadata can be investigated with the functions get_meta_exp, get_meta.stat_huva, get_meta.plot_huva. These functions implement metadata tables with, respectively, 1) group information, 2) statistical analysis and 3) graphical representation.
+
+#### Metadata table_huva experiment
+
+This function returns the metadata table of the huva_experiment groups as a data.frame.
+
+```{r}
+meta_huva <- get_meta_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(meta_huva$FG500_PBMC_cellcount)
+```
+
+#### Metadata statistics_huva experiment
+
+Within the two groups, statistical differences in metadata parameters can be explored with the function get_meta.stat.huva.
+
+```{r}
+meta.stat <- get_meta.stat_huva(huva_exp = binned_dataset, study = "FG500", dataset = "FG500_PBMC_cellcount")
+
+corner(meta.stat)
+```
+
+#### Metadata plots_huva experiment
+
+Also for the huva experiment, the graphical representation of the distribution of individuals across the two huva groups can be visualiuzed in correlation to metadata parameters with the get_anno.plot_huva function.
+
+```{r}
+meta.plot <- get_meta.plot_huva(huva_exp = binned_dataset, study = "FG500")
+
+meta.plot$FG500_PBMC_cellcount$Granulocytes
+```
+
+# Phenotype huva experiment
+
+Sticking to the same structural principle, the huva experiment can be performed, instead of querying on a specific GOI, on a selected dataset-annotated phenotype (e.g., Monocytes(CD14+)). This is done by the function run_huva_phenotype.The downstream analyses mimicry the workflow proposed in previously described huva experiments. 
+
+```{r}
+binned_dataset <- run_huva_phenotype(data = huva.db,
+                                    phenotype = "Monocytes (CD14+)",
+                                    study = "FG500",
+                                    metadata_table = "cellcount",
+                                    quantiles = 0.1, 
+                                    gs_list = hallmarks_V7.2)
+```
+
+## Exploring phenotype huva experiment
+
+Results of the phenotype huva experiment are stored in a "huva_experiment" object and can be easily visualized with several provided functions.
+
+### Plotting of selected genes_phenotype huva experiment
+
+The expression of selected genes in the two newly generated low- and high- groups can be plotted and can be visualized across the different dataset provided during the phenotype huva experiment.
+
+```{r}
+plot_binned <- plot_binned_gene(goi = c("STAT1", "STAT2"), huva_experiment = binned_dataset)
+
+plot_binned$FG500_PBMC
+```
+
+### Expression table_phenotype huva experiment
+
+The expression table resulting from the phenotype huva experiment can be retrieved as data.frame with the function get_exp_huva.
+
+```{r}
+expr_huva <- get_expr_huva(huva_exp = binned_dataset, study = "FG500", dataset = "FG500_PBMC")
+
+corner(expr_huva)
+```
+
+### Phenotype huva annotation
+
+#### Annotation table_phenotype huva experiment
+
+The function get_anno_huva produces a filtered annotation table including only donors belonging to the phenotype huva experiment groups.
+
+```{r}
+anno_huva <- get_anno_huva(huva_exp = binned_dataset, study = "FG500", "FG500_PBMC")
+
+corner(anno_huva)
+```
+
+#### Group annotation statistics_phenotype huva experiment
+
+Differences in the annotation parameters within the two groups are statistically explored with the function get_anno.stat.huva.
+
+```{r}
+anno.stat <- get_anno.stat_huva(huva_exp = binned_dataset, study = "FG500")
+
+anno.stat$FG500_PBMC$living_situation
+```
+
+#### Plotting phenotype huva groups donors distribution
+
+The distribution of donors in the two phenotype huva groups is correlated to the available annotation parameters with the get_anno.plot_huva function.
+
+```{r}
+anno.plot <- get_anno.plot_huva(huva_exp = binned_dataset, study = "FG500")
+
+anno.plot$FG500_PBMC$height
+```
+
+### Get DE genes between phenotype huva high- and low- groups
+
+Within each of the provided datasets, the phenotype huva experiment calculates the differentially expressed (DE) genes between the "low" and "high" groups. The DE gene list can be explored and visualized with the get_DE_huva function. In this function, the p-value (pval) and logFC (logFC) cutoffs can also be specified (default is pval=0.05 and logFC=1). Along with providing the DE genes table, this function also performs the Principal Component Analysis (PCA), which can be plotted over the desidered components (PC, default = c("PC1", "PC2")).
+
+```{r}
+DE_huva <- get_DE_huva(huva_exp = binned_dataset, study = "FG500", cluster_col = F, dataset = "FG500_PBMC")
+
+corner(DE_huva$FG500_PBMC)
+
+DE_huva$plot_FG500_PBMC
+```
+
+### Ranked gene list_phenotype huva experiment
+
+The function get_rank_huva extracts the log2FC-ranked gene list from the comparison between the "low" and "high" groups.
+
+```{r}
+rank_huva <- get_rank_huva(huva_exp = binned_dataset, study = "FG500", dataset = NULL, n_top_genes = 5)
+
+rank_huva$FG500_PBMC
+```
+
+Withing this function, a graphical representation is included.
+
+```{r}
+rank_huva$plot_FG500_PBMC
+```
+
+### Phenotype huva GSEA
+
+Gene set enrichment analysis (GSEA) is performed on user-defined phenotype huva experiment ranked lists. By default, the huva experiment works on hallmark gene sets. A table with the enrichment-associated statistics can be retrieved using the function get_gsea_huva. The function provides a Volcano plot reporting the normalized enriched score (NES) of enriched terms in x-axis with the associated -log10 p value (-log10pval) in y-axis. Set int_plot=TRUE to get also the Volcano plot interactive version.
+
+```{r}
+gsea_huva <- get_gsea_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(gsea_huva$FG500_PBMC)
+
+gsea_huva$plot_FG500_PBMC
+```
+
+### Metadata investigation_phenotype huva 
+
+Also "low" and "high" phenotype huva groups metadata can be investigated with the functions get_meta_exp, get_meta.stat_huva, get_meta.plot_huva. These functions implement metadata tables with, respectively, 1) group information, 2) statistical analysis and 3) graphical representation.
+
+#### Metadata table_phenotype huva 
+
+This function returns the metadata table of the huva_experiment groups as a data.frame.
+
+```{r}
+meta_huva <- get_meta_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(meta_huva$FG500_PBMC_cellcount)
+```
+
+#### Metadata statistics_phenotype huva 
+
+Within the two groups, statistical differences in metadata parameters can be explored with the function get_meta.stat.huva.
+
+```{r}
+meta.stat <- get_meta.stat_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(meta.stat$FG500_PBMC_cellcount)
+```
+
+#### Metadata plots_phenotype huva
+
+Also for the phenotype huva experiment, the graphical representation of the distribution of individuals across the two huva groups can be visualiuzed in correlation to metadata parameters with the get_anno.plot_huva function.
+
+```{r}
+meta.plot <- get_meta.plot_huva(huva_exp = binned_dataset, study = "FG500")
+
+meta.plot$FG500_PBMC_cellcount$`Monocytes (CD14+)`
+```
+
+# Signature huva experiment
+
+In a huva signature experiment the enrichment for a selected signature gene set is used to stratify the samples in the two groups (i.e. high and low).
+
+```{r}
+GSOI <- hallmarks_V7.2$HALLMARK_WNT_BETA_CATENIN_SIGNALING
+```
+
+
+```{r, warning=F, message=F, error=F}
+binned_dataset <- run_huva_signature(data = huva.db,   
+                                     gene_set = GSOI, 
+                                     GSVA.method ="gsva",
+                                     quantiles = 0.10, 
+                                     gs_list = hallmarks_V7.2,
+                                     summ = T, 
+                                     datasets_list = NULL, 
+                                     adjust.method = "none")
+```
+
+## Exploring huva signature experiment
+
+Results of the signature huva experiment are stored in a "huva_experiment" object and can be easily visualized with several provided functions.
+
+### Plotting of selected genes_huva signature experiment
+
+The expression of selected genes in the two newly generated low- and high- groups can be plotted and can be visualized across the different dataset provided during the signature huva experiment.
+
+```{r}
+plot_binned <- plot_binned_gene(goi = c("TCF7", "CRELD1", "STAT1"), huva_experiment = binned_dataset)
+
+plot_binned$FG500_PBMC
+```
+
+### Expression table_signature huva experiment
+
+The expression table resulting from the signature huva experiment can be retrieved as data.frame with the function get_exp_huva.
+
+```{r}
+expr_huva <- get_expr_huva(huva_exp = binned_dataset, study = "FG500", dataset = "FG500_PBMC")
+
+corner(expr_huva)
+```
+
+
+### Signature huva annotation
+
+#### Annotation table_signature huva experiment
+
+The function get_anno_huva produces a filtered annotation table including only donors belonging to the signature huva experiment groups.
+
+```{r}
+anno_huva <- get_anno_huva(huva_exp = binned_dataset, study = "FG500", "FG500_PBMC")
+
+corner(anno_huva)
+```
+
+#### Group annotation statistics_signature huva experiment
+
+Differences in the annotation parameters within the two groups are statistically explored with the function get_anno.stat.huva.
+
+```{r}
+anno.stat <- get_anno.stat_huva(huva_exp = binned_dataset, study = "FG500")
+
+anno.stat$FG500_PBMC$living_situation
+```
+
+#### Plotting signature huva groups donors distribution
+
+The distribution of donors in the two signature huva groups is correlated to the available annotation parameters with the get_anno.plot_huva function.
+
+```{r}
+anno.plot <- get_anno.plot_huva(huva_exp = binned_dataset, study = "FG500")
+
+anno.plot$FG500_PBMC$living_situation
+```
+
+### Get DE genes between signture huva high- and low- groups
+
+Within each of the provided datasets, the signature huva experiment calculates the differentially expressed (DE) genes between the "low" and "high" groups. The DE gene list can be explored and visualized with the get_DE_huva function. In this function, the p-value (pval) and logFC (logFC) cutoffs can also be specified (default is pval=0.05 and logFC=1). Along with providing the DE genes table, this function also performs the Principal Component Analysis (PCA), which can be plotted over the desidered components (PC, default = c("PC1", "PC2")).
+
+```{r}
+DE_huva <- get_DE_huva(huva_exp = binned_dataset, study = "FG500", dataset ="FG500_PBMC")
+
+corner(DE_huva$FG500_PBMC)
+```
+
+A quick overview on the differentially expressed genes is also included in the output of the function.
+
+```{r}
+DE_huva$plot_FG500_PBMC
+
+DE_huva$PCA_FG500_PBMC
+```
+
+### Ranked gene list_signature huva 
+
+The function get_rank_huva extracts the log2FC-ranked gene list from the comparison between the "low" and "high" groups.
+
+```{r}
+#add the normal ranking file
+rank_huva <- get_rank_huva(huva_exp = binned_dataset, study = "FG500", dataset = NULL, n_top_genes = 5)
+
+rank_huva$FG500_PBMC
+```
+
+Withing this function, a graphical representation is included.
+
+```{r}
+rank_huva$plot_FG500_PBMC
+```
+
+### Signature huva GSEA
+
+Gene set enrichment analysis (GSEA) is performed on user-defined signature huva experiment ranked lists. By default, the huva experiment works on hallmark gene sets. A table with the enrichment-associated statistics can be retrieved using the function get_gsea_huva. The function provides a Volcano plot reporting the normalized enriched score (NES) of enriched terms in x-axis with the associated -log10 p value (-log10pval) in y-axis. Set int_plot=TRUE to get also the Volcano plot interactive version.
+
+```{r}
+gsea_huva <- get_gsea_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(gsea_huva$FG500_PBMC)
+```
+
+Within the output of the function a vulcano plot showing the NES and the -log10 p value is included.
+
+```{r}
+gsea_huva$plot_FG500_PBMC
+```
+
+If int_plot is set to TRUE also the interactive plot will be produced for an easier inspection of the results
+
+```{r}
+gsea_huva$int_plot_FG500_PBMC
+```
+
+### Metadata investigation_signature huva 
+
+Also "low" and "high" signature huva groups metadata can be investigated with the functions get_meta_exp, get_meta.stat_huva, get_meta.plot_huva. These functions implement metadata tables with, respectively, 1) group information, 2) statistical analysis and 3) graphical representation.
+
+#### Metadata table_signature huva 
+
+This function returns the metadata table of the signature huva_experiment groups as a data.frame.
+
+```{r}
+meta_huva <- get_meta_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(meta_huva$FG500_PBMC_cellcount)
+```
+
+#### Metadata statistics_signature huva 
+
+Within the two groups, statistical differences in metadata parameters can be explored with the function get_meta.stat.huva.
+
+```{r}
+meta.stat <- get_meta.stat_huva(huva_exp = binned_dataset, study = "FG500")
+
+corner(meta.stat$FG500_PBMC_cellcount)
+```
+
+#### Metadata plots_signature huva 
+
+Also for the signature huva experiment, the graphical representation of the distribution of individuals across the two huva groups can be visualiuzed in correlation to metadata parameters with the get_anno.plot_huva function.
+
+```{r}
+meta.plot <- get_meta.plot_huva(huva_exp = binned_dataset, study = "FG500")
+
+meta.plot$FG500_PBMC_cellcount$`Monocytes (CD14+)`
+```
+
+# Generation of a new huva dataset
+
+The huva package allows the user to provide a new dataset including expression data, sample annotation and possible metadata to run a huva experiment with novel data. The single table must be formatted according to the huva_dataset structure. The function generate_huva_dataset will format the individual data.frame to a huva_dataset object. Setting combine=T, the new dataset will be merged with th existing huva_default_dataset.
+
+```{r, include=F}
+#preparing artificial data
+
+data_FG <- huva.db$FG500$data
+anno_FG <- huva.db$FG500$anno
+meta_FG <- huva.db$FG500$metadata
+```
+
+## Format the data
+
+```{r}
+new_huva.db <- generate_huva_dataset(dataset_name = "newdata", 
+                                     data = "data_FG", 
+                                     annotation = "anno_FG", 
+                                     metadata = "meta_FG", combine = F)
+```
+
+The new dataset can then be used for huva exploratory experiments and huva experiments
+
+## Exploratory huva experiment
+
+```{r}
+gene_overview_new <- gene_exam(huva_dataset = new_huva.db, gene = gene_name)
+```
+
+## huva experiment
+
+```{r}
+binned_dataset_new <- run_huva_experiment(data = new_huva.db,
+                                        gene = gene_name,
+                                        quantiles = 0.10,
+                                        gs_list = hallmarks_V7.2,
+                                        summ = T,
+                                        datasets_list = NULL,
+                                        adjust.method = "none")
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
