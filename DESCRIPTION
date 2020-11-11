@@ -1,7 +1,7 @@
 Package: huva
 Type: Package
 Title: Human Variation Analysis
-Version: 0.1.5
+Version: 0.1.4
 Author: Lorenzo Bonaguro
 Maintainer: Lorenzo Bonaguro <lorennzobonaguro@uni-bonn.de>
 Description: More about what it does (maybe more than one line)
