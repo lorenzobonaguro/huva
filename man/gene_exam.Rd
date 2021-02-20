@@ -2,8 +2,7 @@
 % Please edit documentation in R/huva_gene_examination.R
 \name{gene_exam}
 \alias{gene_exam}
-\title{Examin the profile of expression of a selected gene and ivestigate the relation with annotation paramiters of
-metadata}
+\title{Exploratory huva experiment}
 \usage{
 gene_exam(
   huva_dataset = huva_default_data,
@@ -15,21 +14,29 @@ gene_exam(
 \arguments{
 \item{huva_dataset}{huva_dataset class object.}
 
-\item{gene}{gene name used for the analysis}
+\item{gene}{gene name used for the analysis.}
 
-\item{bins}{graphica option, see ggplot2}
+\item{bins}{graphical option, see ggplot2 for details.}
 
-\item{alpha}{see ggplot2}
+\item{alpha}{graphical option, see ggplot2 for details.}
 }
 \value{
-huva_gene_examination class object, it includes and overview of the distribution of gene expression for a selected GOI.
+huva_gene_examination class object including a graphical overview of the distribution of gene expression of a selected GOI.
 }
 \description{
-Examin the profile of expression of a selected gene and ivestigate the relation with annotation paramiters of
+This funtion looks into the expression of a gene of interest (GOI) in the specified dataset or across other user-provided datasets.
+}
+\details{
+Examine the profile of expression of a selected gene and investigate the relationship with annotation parameters of
 metadata
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
 
+}
+\seealso{
+run_huva_experiment
 }

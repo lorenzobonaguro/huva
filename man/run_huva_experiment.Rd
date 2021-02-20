@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_experiment.R
 \name{run_huva_experiment}
 \alias{run_huva_experiment}
-\title{Calculate huva experiment on the expression variance of a selected gene of interest}
+\title{In population expression variance of a selected gene of interest.}
 \usage{
 run_huva_experiment(
   data = datasets,
@@ -17,28 +17,53 @@ run_huva_experiment(
 \arguments{
 \item{data}{huva_dataset class object.}
 
-\item{gene}{gene name used for the analysis}
+\item{gene}{gene name used for the analysis.}
 
 \item{quantiles}{definition of the quantile of segregation of the samples, quantiles are always simmetrical
-between high and low groups (e.g. \code{quantile 0.1} will use the 10th and 90th percentiles)}
+between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default
+(quantile 0.1 will use the 10th and 90th percentiles).}
 
 \item{gs_list}{class list object defining gene sets to be included in the analysis (to generate this file see
-the documentation of fgse)}
+the documentation of fgse).}
 
-\item{summ}{bolean. define if the summary of the huva experiment will be calculated}
+\item{summ}{default is TRUE, it defines if the summary of the huva experiment will be calculated.}
 
-\item{datasets_list}{characher vector used to filter the dataset in the data objet for the analysis}
+\item{datasets_list}{character vector used to filter the dataset in the data object for the analysis.}
 
-\item{adjust.method}{p value adjustment method used to corret the DE genes analysis}
+\item{adjust.method}{p value adjustment method used to correct the DE genes analysis.}
 }
 \value{
 huva_experiment
 }
 \description{
+run_huva_experiment calculates the expression variance of a selected gene of interest.
+}
+\details{
 Calculate huva experiment on the expression variance of a selected gene of interest
+
+The huva (human variation) package takes advantage of population-scale multi-omics data to infer gene
+    function and relationship between phenotype and gene expression. Within a reference dataset, huva derives
+    two experimental groups, i.e. individuals with "low" or "high" expression of the GOI, enabling the subsequent
+    comparison of their transcriptional profile and functional parameters. This approach robustly identifies the
+    biological relevance of a GOI and predicts the phenotype of naturally occurring loss- and gain-of-function
+    mutations in humans. The huva experiment is performed consecutively on all the included datasets.
+    Differential expression analysis is performed using the limma R package using the experimental groups in the
+    design model, p value correction for multiple tests and fold change cut-off for each experiment reported.
+    GSEA within the huva function is performed with the R package fgsea with standard setting (1000 random
+    permutations), the gene rank used for GSEA is calculated according to the log2 fold change in the comparison
+    between the low and high groups. The results of the huva experiment are collected in a huva_experiment
+    R object used as input for next provided functions to explore the output for each dataset.
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
 }

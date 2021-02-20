@@ -2,23 +2,41 @@
 % Please edit documentation in R/huva_plotting.R
 \name{plot_binned_gene}
 \alias{plot_binned_gene}
-\title{Plot selected genes from an huva_experiment class object}
+\title{plot_binned_gene}
 \usage{
 plot_binned_gene(goi, huva_experiment)
 }
 \arguments{
-\item{goi}{Name of the gene of interest}
+\item{goi}{name of the gene/s of interest}
 
 \item{huva_experiment}{huva_experiment class object}
 }
 \value{
-list of ggplot objects, each plot recapitulates gene expression of selected gene/s in the present datasets
+list of ggplot objects, each plot recapitulates gene expression of selected gene/s in the present datasets.
 }
 \description{
+This function plots the expression of selected genes in a huva experiment low- and high- groups across
+             the different provided datasets.
+}
+\details{
 Plot selected genes from an huva_experiment class object
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+plot_binned <- plot_binned_gene(goi = c("CRELD1", "CRELD2", "TCF7", "RCAN3"),
+                                huva_experiment = binned_dataset)
+
+}
+\seealso{
+run_huva_experiment
 }

@@ -7,20 +7,39 @@
 get_anno.plot_huva(huva_exp, study, dataset = NULL)
 }
 \arguments{
-\item{huva_exp}{huva experiment class object}
+\item{huva_exp}{huva experiment class object.}
 
-\item{study}{Chaarachter vector defininf the names of the study to be visualised}
+\item{study}{character vector defining the name of the studies to be visualised.}
 
-\item{dataset}{if NULL (default) all datasets will be used}
+\item{dataset}{if NULL (default) all datasets will be used.}
 }
 \value{
-return plot list on annotation table
+The function returns a plot list based on the annotation table.
 }
 \description{
+The distribution of donors in the two huva experiment groups is correlated to the available annotation parameters with the get_anno.plot_huva function.
+}
+\details{
 get_anno.plot_huva
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+anno.plot <- get_anno.plot_huva(huva_exp = binned_dataset,
+                                study = "FG500")
+
+anno.plot$FG500_whole_blood$living_situation
+
+}
+\seealso{
+run_huva_experiment
 }

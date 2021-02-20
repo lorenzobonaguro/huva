@@ -2,25 +2,40 @@
 % Please edit documentation in R/huva_explore_examination.R
 \name{get_anno.plot_exam}
 \alias{get_anno.plot_exam}
-\title{Plot of annotation table parameters for a selected gene of interest}
+\title{get_anno.plot_exam}
 \usage{
 get_anno.plot_exam(huva_expression, study = "ALL", dataset = "ALL")
 }
 \arguments{
-\item{huva_expression}{huva_expression class object}
+\item{huva_expression}{huva_expression class object.}
 
-\item{study}{charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")}
+\item{study}{character vector defining the studies to be used in the analysis (default = "ALL").}
 
-\item{dataset}{charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")}
+\item{dataset}{character vector defining the datasets to be used in the analysis (default = "ALL").}
 }
 \value{
-data.frame or list of the annotation data of a selected gene of interest across the available datasets
+The function returns a plot list based on the annotation table.
 }
 \description{
+Correlations in a huva gene examination experiment can be graphically visualized with the
+             get_anno.plot_exam function, whose format produces an output containing a list of graphical objects.
+}
+\details{
 Plot of annotation table parameters for a selected gene of interest
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
 
+anno.plot_exam <- get_anno.plot_exam(huva_expression = gene_overview,
+                                     study = "FG500",
+                                     dataset = "FG500_whole_blood")
+
+anno.plot_exam$weight
+
+}
+\seealso{
+gene_exam, run_huva_experiment
 }

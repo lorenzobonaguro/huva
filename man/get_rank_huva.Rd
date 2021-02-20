@@ -7,22 +7,41 @@
 get_rank_huva(huva_exp, study, dataset = NULL, n_top_genes = 20)
 }
 \arguments{
-\item{huva_exp}{huva experiment class object}
+\item{huva_exp}{huva experiment class object.}
 
-\item{study}{Chaarachter vector defininf the names of the study to be visualised}
+\item{study}{character vector defining the name of the studies to be visualised.}
 
-\item{dataset}{if NULL (default) all datasets will be used}
+\item{dataset}{if NULL (default) all datasets will be used.}
 
-\item{n_top_genes}{number of top down or up regulated genes to be displayed}
+\item{n_top_genes}{number of top down- or up- regulated genes to be displayed.}
 }
 \value{
-ranking of the genes
+log2FC-ranked gene list.
 }
 \description{
+The function get_rank_huva extracts the log2FC-ranked gene list from the comparison between the "low" and "high" groups of the specified huva experiment.
+}
+\details{
 get_rank_huva
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+rank_huva <- get_rank_huva(huva_exp = binned_dataset,
+                           study = "ImmVar",
+                           dataset = NULL,
+                           n_top_genes = 5)
+
+}
+\seealso{
+run_huva_experiment
 }

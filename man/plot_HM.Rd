@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_misc.R
 \name{plot_HM}
 \alias{plot_HM}
-\title{Plot heatmap object}
+\title{plot_HM}
 \usage{
 plot_HM(HM)
 }
@@ -11,12 +11,31 @@ plot_HM(HM)
 pheatmap function to an object (i.e. pheatmap_object <- pheatmap(matrix))}
 }
 \value{
-A heatmap created by pheatmap
+A heatmap created with pheatmap function
 }
 \description{
+plot heatmap object
+}
+\details{
 Plot heatmap object
 }
 \examples{
-2+2
+library(huva)
+library(huva.db)
+
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
+
+DE_huva <- get_DE_huva(huva_exp = binned_dataset,
+                       study = "FG500",
+                       dataset = "FG500_whole_blood")
+
+plot_HM(DE_huva$HM_FG500_whole_blood)
+
 }
 \keyword{plot_pheatmap}

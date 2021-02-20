@@ -7,20 +7,38 @@
 get_expr_huva(huva_exp, study, dataset = NULL)
 }
 \arguments{
-\item{huva_exp}{huva experiment class object}
+\item{huva_exp}{huva experiment class object.}
 
-\item{study}{Chaarachter vector defininf the names of the study to be visualised}
+\item{study}{character vector defining the name of the studies to be visualised.}
 
-\item{dataset}{if NULL (default) all datasets will be used}
+\item{dataset}{if NULL (default) all datasets will be used.}
 }
 \value{
-expression table of the binned samples
+expression table of binned samples as data frame object.
 }
 \description{
+The function get_expr_huva provides the expression table resulting from reference huva experiment data.frame.
+}
+\details{
 get_expr_huva
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+expr_huva <- get_expr_huva(huva_exp = binned_dataset,
+                           study = "FG500",
+                           dataset = "FG500_whole_blood")
+
+}
+\seealso{
+run_huva_experiment
 }

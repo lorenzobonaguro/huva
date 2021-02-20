@@ -1,21 +1,26 @@
-#' Examin the profile of expression of a selected gene and ivestigate the relation with annotation paramiters of
+#' Examine the profile of expression of a selected gene and investigate the relationship with annotation parameters of
 #' metadata
 #'
+#' @title Exploratory huva experiment
+#' @description This funtion looks into the expression of a gene of interest (GOI) in the specified dataset or across other user-provided datasets.  
 #' @param huva_dataset huva_dataset class object.
-#' @param gene gene name used for the analysis
-#' @param bins graphica option, see ggplot2
-#' @param alpha see ggplot2
-#' @return huva_gene_examination class object, it includes and overview of the distribution of gene expression for a selected GOI.
-#' @examples
-#'
-#' 2+2
-#'
+#' @param gene gene name used for the analysis.
+#' @param bins graphical option, see ggplot2 for details.
+#' @param alpha graphical option, see ggplot2 for details.
+#' @return huva_gene_examination class object including a graphical overview of the distribution of gene expression of a selected GOI.
+#' @seealso run_huva_experiment
 #' @import ggplot2
 #' @import reshape2
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#' 
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
 #' @export
-gene_exam <- function(huva_dataset=huva_default_data, gene = gene_name, bins=30, alpha=1){
+gene_exam <- function(huva_dataset = huva_default_data, gene = gene_name, bins = 30, alpha = 1){
 
-  if (class(huva_dataset)!="huva_dataset") {
+  if (class(huva_dataset)!= "huva_dataset") {
     warning("Warning: For reliable results use class huva_dataset object")
   }
 
@@ -23,7 +28,7 @@ gene_exam <- function(huva_dataset=huva_default_data, gene = gene_name, bins=30,
 
   container <- list()
 
-  # If using all the datasets provided there is a loop to get the expression data of a selected gene and prepare tabple with all the annnotation and metadata for the analysis, all the
+  # If using all the datasets provided there is a loop to get the expression data of a selected gene and prepare table with all the annnotation and metadata for the analysis, all the
   # results will be stored in a list serving then as input for other functions
 
   for (i in names(huva_dataset)) {
@@ -36,8 +41,8 @@ gene_exam <- function(huva_dataset=huva_default_data, gene = gene_name, bins=30,
         dataframe <- melt(dataframe, value.name = "expression")
 
         container[["plot"]][[paste(i,k, sep = "_")]] <- ggplot(dataframe, aes(x = expression)) +
-          geom_histogram(aes(y=..density..),bins = bins, alpha=alpha, fill="white", color="black") +
-          geom_density(alpha=.2, color="black")+
+          geom_histogram(aes(y =..density..),bins = bins, alpha=alpha, fill="white", color="black") +
+          geom_density(alpha =.2, color="black")+
           ggtitle(paste(gene, "-",k))+
           theme_minimal() +
           theme(aspect.ratio = 1)
@@ -79,16 +84,17 @@ gene_exam <- function(huva_dataset=huva_default_data, gene = gene_name, bins=30,
     x
   }, nRow = maxrow)
 
-  expresssion_sum <- as.data.frame(mylist_mod)
+  expression_sum <- as.data.frame(mylist_mod)
 
-  colnames(expresssion_sum) <- names(container$expression)
-  rownames(expresssion_sum) <- NULL
+  colnames(expression_sum) <- names(container$expression)
+  rownames(expression_sum) <- NULL
 
-  container[["expression"]][["expression_summary"]] <- expresssion_sum
+  container[["expression"]][["expression_summary"]] <- expression_sum
 
   container[["gene_name"]] <- gene
 
   # output
+  
    class(container) <- "huva_gene_examination"
 
    return(container)

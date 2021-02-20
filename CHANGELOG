@@ -18,3 +18,9 @@ huva R package - changelog
 	- Add p.adj method selection for the huva_phenotype experiment
 	- Fix table output for the metadata stat
 	- Changed volcano plot to have simmetrical axes
+	
+0.1.5 <-
+	- Fixed description and documentation of the huva functions
+	- Fixed bug in get_rank_huva with R4.0.X where the levels in the plot are not assigned correctly
+	- Fix rownames of the get_anno.stats_huva output for continous variables
+	- Added the p value and FC cut-off for the get_huva_DE function (defaults: pval = 0.05; logFC = 0)

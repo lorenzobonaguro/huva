@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_experiment.R
 \name{run_huva_signature}
 \alias{run_huva_signature}
-\title{Calculate huva experiment on variance in the signature enrichment of a provided gene set}
+\title{run_huva_signature}
 \usage{
 run_huva_signature(
   data = huva_default_dataset,
@@ -18,30 +18,51 @@ run_huva_signature(
 \arguments{
 \item{data}{huva_dataset class object.}
 
-\item{gene_set}{signature vector to be used for the definition of high and low groups}
+\item{gene_set}{signature vector to be used for the definition of high and low groups.}
 
 \item{quantiles}{definition of the quantile of segregation of the samples, quantiles are always simmetrical
-between high and low groups (e.g. \code{quantile 0.1} will use the 10th and 90th percentiles)}
+between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default
+(quantile 0.1 will use the 10th and 90th percentiles).}
 
 \item{gs_list}{class list object defining gene sets to be included in the analysis (to generate this file see
-the documentation of fgse)}
+the documentation of fgse).}
 
-\item{summ}{bolean. define if the summary of the huva experiment will be calculated}
+\item{summ}{default is TRUE, it defines if the summary of the huva experiment will be calculated.}
 
-\item{datasets_list}{characher vector used to filter the dataset in the data objet for the analysis}
+\item{datasets_list}{character vector used to filter the dataset in the data object for the analysis.}
 
-\item{adjust.method}{p value adjustment method used to corret the DE genes analysis}
+\item{adjust.method}{p value adjustment method used to correct the DE genes analysis.}
 
-\item{GSVA.method}{method for single sample signature enrichment, see ?gsva for options}
+\item{GSVA.method}{method for single sample signature enrichment, see ?gsva for options.}
 }
 \value{
 huva_experiment
 }
 \description{
+In the huva signature experiment the enrichment for a selected signature gene set is used to stratify the samples in two experimental groups (i.e. high and low).
+}
+\details{
 Calculate huva experiment on variance in the signature enrichment of a provided gene set
+
+In a huva signature experiment, the enrichment for a selected signature gene set is used to stratify
+    the samples in the two groups (i.e. high and low).This is performed by the function run_huva_signature.
+    The downstream analyses mimicry the workflow proposed in the gene-based huva experiment.
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_signature(data = huva.db,
+                                    gene_set = hallmarks_V7.2$HALLMARK_WNT_BETA_CATENIN_SIGNALING,
+                                    GSVA.method =  "gsva",
+                                    quantiles = 0.10,
+                                    gs_list = hallmarks_V7.2,
+                                    summ = TRUE,
+                                    datasets_list = NULL,
+                                    adjust.method = "none")
 
+
+}
+\seealso{
+run_huva_experiment
 }

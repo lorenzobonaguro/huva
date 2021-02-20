@@ -7,22 +7,39 @@
 get_anno.stat_huva(huva_exp, study, dataset = NULL, easytoread = T)
 }
 \arguments{
-\item{huva_exp}{huva experiment class object}
+\item{huva_exp}{huva experiment class object.}
 
-\item{study}{Chaarachter vector defininf the names of the study to be visualised}
+\item{study}{character vector defining the name of the studies to be visualised.}
 
-\item{dataset}{if NULL (default) all datasets will be used}
+\item{dataset}{if NULL (default) all datasets will be used.}
 
-\item{easytoread}{if TRUE (default) transforms all output in data.frame ojects}
+\item{easytoread}{if TRUE (default), it transforms all outputs in data frame objects.}
 }
 \value{
-return statistics list on annotation table
+returns a list of statistics performed on the annotation table.
 }
 \description{
+Differences in the annotation parameters within the two groups are statistically explored with the function get_anno.stat.huva.
+}
+\details{
 get_anno.stats_huva
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+anno.stat <- get_anno.stat_huva(huva_exp = binned_dataset,
+                                study = "FG500")
+
+}
+\seealso{
+run_huva_experiment
 }

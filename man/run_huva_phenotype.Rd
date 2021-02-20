@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_experiment.R
 \name{run_huva_phenotype}
 \alias{run_huva_phenotype}
-\title{Calculate huva experiment on the variance of a seleted metadata paramiter}
+\title{run_huva_phenotype}
 \usage{
 run_huva_phenotype(
   data,
@@ -18,30 +18,49 @@ run_huva_phenotype(
 \arguments{
 \item{data}{huva_dataset class object.}
 
-\item{phenotype}{gene name used for the analysis}
+\item{phenotype}{gene name used for the analysis.}
 
-\item{study}{defines the study to be used in the analysis}
+\item{study}{defines the study to be used in the analysis.}
 
-\item{metadata_table}{name of the metadata table in wich the selected paramiter can be found}
+\item{metadata_table}{name of the metadata table in which the selected parameter can be found.}
 
 \item{quantiles}{definition of the quantile of segregation of the samples, quantiles are always simmetrical
-between high and low groups (e.g. \code{quantile 0.1} will use the 10th and 90th percentiles)}
+between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default
+(quantile 0.1 will use the 10th and 90th percentiles).}
 
 \item{gs_list}{class list object defining gene sets to be included in the analysis (to generate this file see
-the documentation of fgse)}
+the documentation of fgse).}
 
-\item{summ}{default TRUE, define if the summary of the huva experiment will be calculated}
+\item{summ}{default is TRUE, it defines if the summary of the huva experiment will be calculated.}
 
-\item{adjust.method}{p value adjustment method used to corret the DE genes analysis}
+\item{adjust.method}{p value adjustment method used to correct the DE genes analysis.}
 }
 \value{
-huva_experiment based on the segregaation of the phenotype
+huva_experiment based on the segregation of the phenotype.
 }
 \description{
-Calculate huva experiment on the variance of a seleted metadata paramiter
+This function calculates a huva experiment on the variance of a selected metadata parameter.
+}
+\details{
+Calculate huva experiment on the variance of a selected metadata parameter
+
+The huva experiment can be performed, instead of querying on a specific gene, on a selected
+    dataset-annotated phenotype (e.g., Monocytes(CD14+)). This is done by the function run_huva_phenotype.
+    The downstream analyses mimicry the workflow proposed in the gene-based huva experiment.
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_phenotype(data = huva.db,
+                                    phenotype = "Monocytes (CD14+)",
+                                    study = "FG500",
+                                    metadata_table = "cellcount",
+                                    quantiles = 0.1,
+                                    gs_list = hallmarks_V7.2)
 
+
+}
+\seealso{
+run_huva_experiment
 }

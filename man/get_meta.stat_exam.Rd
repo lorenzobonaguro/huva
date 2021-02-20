@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_explore_examination.R
 \name{get_meta.stat_exam}
 \alias{get_meta.stat_exam}
-\title{Metadata table parameters for a selected gene of interest}
+\title{get_meta.stat_exam}
 \usage{
 get_meta.stat_exam(
   huva_expression,
@@ -14,20 +14,33 @@ get_meta.stat_exam(
 \arguments{
 \item{huva_expression}{huva_expression class object}
 
-\item{study}{charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")}
+\item{study}{character vector defining the studies to be used in the analysis (default = "ALL").}
 
-\item{dataset}{charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")}
+\item{dataset}{character vector defining the datasets to be used in the analysis (default = "ALL").}
 
-\item{param}{colName of the sample table to be used for the statistical analyisis}
+\item{param}{colName of the sample table to be used for the statistical analysis.}
 }
 \value{
-data.frame or list of the annotation data of a selected gene of interest across the available datasets
+list of statistics on the metadata of the huva examination experiment.
 }
 \description{
+Huva examination experiment statistical analysis of the influence of provided metadata on the expression of a gene of
+             interest (GOI) is performed by the function get_meta.stat_exam which reports it on a data.frame or list of data.frames.
+}
+\details{
 Metadata table parameters for a selected gene of interest
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
 
+meta.stat_exam <- get_meta.stat_exam(huva_expression = gene_overview,
+                                     study = "FG500",
+                                     dataset = "FG500_whole_blood_cellcount")
+
+}
+\seealso{
+gene_exam, run_huva_experiment
 }

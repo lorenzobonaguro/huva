@@ -2,25 +2,39 @@
 % Please edit documentation in R/huva_explore_examination.R
 \name{get_expr_exam}
 \alias{get_expr_exam}
-\title{Expression table for a selected gene of interest}
+\title{get_expr_exam}
 \usage{
 get_expr_exam(huva_expression, study, dataset)
 }
 \arguments{
-\item{huva_expression}{huva_expression class object}
+\item{huva_expression}{huva_expression class object.}
 
-\item{study}{charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")}
+\item{study}{character vector defining the studies to be used in the analysis (default = "ALL").}
 
-\item{dataset}{charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")}
+\item{dataset}{character vector defining the datasets to be used in the analysis (default = "ALL").}
 }
 \value{
-data.frame or list of the expression of a selected gene of interest across the available datasets
+data.frame or list of the expression of a selected gene of interest across the available datasets.
 }
 \description{
+With this function, the gene of interest (GOI) expression table in huva gene examination selected
+             datasets is exported as a data.frame reporting sample names as rownames and expression values in
+             a single column.
+}
+\details{
 Expression table for a selected gene of interest
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
 
+expr_exam <- get_expr_exam(huva_expression = gene_overview,
+                           study = "ImmVar",
+                           dataset = "ImmVar_CD4T")
+
+}
+\seealso{
+gene_exam, run_huva_experiment
 }

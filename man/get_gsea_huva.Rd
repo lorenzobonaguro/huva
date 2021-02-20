@@ -7,22 +7,43 @@
 get_gsea_huva(huva_exp, study, dataset = NULL, int_plot = T)
 }
 \arguments{
-\item{huva_exp}{huva experiment class object}
+\item{huva_exp}{huva experiment class object.}
 
-\item{study}{Chaarachter vector defininf the names of the study to be visualised}
+\item{study}{character vector defining the name of the studies to be visualised.}
 
-\item{dataset}{if NULL (default) all datasets will be used}
+\item{dataset}{if NULL (default) all datasets will be used.}
 
-\item{int_plot}{default TRUE, decide if the interactive GSEA plot will be calculated}
+\item{int_plot}{default is TRUE and provides an interactive GSEA Volcano plot.}
 }
 \value{
-return GSEA table and plot
+return the GSEA table as a data frame and a Volcano plot (NES in x-axis, -log10pval in y-axis).
 }
 \description{
+Gene set enrichment analysis (GSEA) is performed on user-defined huva experiment ranked lists. By default, the huva experiment works on hallmark gene sets.
+}
+\details{
 get_gsea_huva
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+gsea_huva <- get_gsea_huva(huva_exp = binned_dataset,
+                           study = "FG500")
+
+gsea_huva$plot_FG500_whole_blood
+
+gsea_huva$int_plot_FG500_whole_blood
+
+}
+\seealso{
+run_huva_experiment
 }

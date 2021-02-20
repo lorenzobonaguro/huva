@@ -1,23 +1,31 @@
 #' Visualization of the expression histogram for a selected gene of interest
 #'
+#' @title get_expr.plot_exam
+#' @description The function plots expression of the gene of interest (GOI) across all datasets to inspect possible
+#'              distribution differences in a huva gene examination experiment.
 #' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @param bins see ggplot2 documentation (default = 30)
-#' @param alpha see ggplot2 documentation (default = 1)
-#' @return ggplot class object, histogram for the expression of a selected gene of interest across selected datasets
-#' @examples
-#'
-#' 2+2
-#'
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @param bins graphical option, see ggplot2 for details (default = 30).
+#' @param alpha graphical option, see ggplot2 for details (default = 1).
+#' @return ggplot class object, histogram reporting the expression of a selected GOI across selected datasets.
+#' @seealso gene_exam, run_huva_experiment
 #' @import ggplot2
 #' @import reshape2
 #' @import ggsci
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' expr_exam.plot <- get_expr.plot_exam(huva_expression = gene_overview)
+#'
 #' @export
-get_expr.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL", bins=30, alpha=1) {
+get_expr.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL", bins = 30, alpha = 1) {
 
-  if (class(huva_expression)!="huva_gene_examination") {
-    error("Error: Use huva_gene_examination class object for reliable results")
+  if (class(huva_expression)!= "huva_gene_examination") {
+    error("Error: Use huva_gene_examination class object for reliable results.")
   }
 
   name <- huva_expression$gene_name
@@ -31,9 +39,9 @@ get_expr.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL", 
 
     print("plotting expression for all available datasets")
 
-    ggplot(table, aes(x=expression, color=study))+
-      geom_histogram(aes(y=..density..),bins = bins, alpha=alpha, fill="white") +
-      geom_density(alpha=.2, color="black", aes(fill=study))+
+    ggplot(table, aes(x = expression, color = study))+
+      geom_histogram(aes(y = ..density..),bins = bins, alpha = alpha, fill = "white") +
+      geom_density(alpha = .2, color = "black", aes(fill = study))+
       ggtitle(paste(name, "expression"))+
       theme_minimal() +
       scale_fill_aaas()+
@@ -50,9 +58,9 @@ get_expr.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL", 
 
       table <- table[table$study %in% study,]
 
-      ggplot(table, aes(x=expression, color=study))+
-        geom_histogram(aes(y=..density..), bins = bins, alpha=alpha, fill="white") +
-        geom_density(alpha=.2, color="black", aes(fill=study))+
+      ggplot(table, aes(x = expression, color = study))+
+        geom_histogram(aes(y = ..density..), bins = bins, alpha = alpha, fill = "white") +
+        geom_density(alpha = .2, color = "black", aes(fill = study))+
         ggtitle(paste(name, "expression"))+
         theme_minimal() +
         scale_fill_aaas()+
@@ -68,9 +76,9 @@ get_expr.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL", 
 
       table <- table[table$dataset %in% dataset,]
 
-      ggplot(table, aes(x=expression, color=study))+
-        geom_histogram(aes(y=..density..), bins = bins, alpha=alpha, fill="white") +
-        geom_density(alpha=.2, color="black", aes(fill=study))+
+      ggplot(table, aes(x = expression, color = study))+
+        geom_histogram(aes(y = ..density..), bins = bins, alpha = alpha, fill = "white") +
+        geom_density(alpha = .2, color = "black", aes(fill = study))+
         ggtitle(paste(name, "expression"))+
         theme_minimal() +
         scale_fill_aaas()+
@@ -86,19 +94,30 @@ get_expr.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL", 
 
 #' Expression table for a selected gene of interest
 #'
-#' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @return data.frame or list of the expression of a selected gene of interest across the available datasets
+#' @title get_expr_exam
+#' @description With this function, the gene of interest (GOI) expression table in huva gene examination selected
+#'              datasets is exported as a data.frame reporting sample names as rownames and expression values in
+#'              a single column.
+#' @param huva_expression huva_expression class object.
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @return data.frame or list of the expression of a selected gene of interest across the available datasets.
+#' @seealso gene_exam, run_huva_experiment
 #' @examples
+#' library(huva)
+#' library(huva.db)
 #'
-#' 2+2
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' expr_exam <- get_expr_exam(huva_expression = gene_overview,
+#'                            study = "ImmVar",
+#'                            dataset = "ImmVar_CD4T")
 #'
 #' @export
 get_expr_exam <- function(huva_expression, study, dataset) {
 
-  if (class(huva_expression)!="huva_gene_examination") {
-    error("Error: Use huva_gene_examination class object for reliable results")
+  if (class(huva_expression)!= "huva_gene_examination") {
+    error("Error: Use huva_gene_examination class object for reliable results.")
   }
 
   if (paste(study, collapse = "")=="ALL") {
@@ -127,19 +146,29 @@ get_expr_exam <- function(huva_expression, study, dataset) {
 
 #' Annotation table for a selected gene of interest
 #'
-#' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets
+#' @title get_anno_exam
+#' @description This function exports the comprehensive table reporting all the available annotation parameters
+#'              for the selected dataset in a huva gene examination experiment.
+#' @param huva_expression huva_expression class object.
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets.
+#' @seealso gene_exam, run_huva_experiment
 #' @examples
+#' library(huva)
+#' library(huva.db)
 #'
-#' 2+2
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' anno_exam <- get_anno_exam(huva_expression = gene_overview,
+#'                            study = "CEDAR",
+#'                            dataset = "CEDAR_CD4T")
 #'
 #' @export
-get_anno_exam <- function(huva_expression, study="ALL", dataset="ALL") {
+get_anno_exam <- function(huva_expression, study = "ALL", dataset = "ALL") {
 
-  if (class(huva_expression)!="huva_gene_examination") {
-    error("Error: Use huva_gene_examination class object for reliable results")
+  if (class(huva_expression)!= "huva_gene_examination") {
+    error("Error: Use huva_gene_examination class object for reliable results.")
   }
 
   if (paste(study, collapse = "")=="ALL") {
@@ -167,19 +196,28 @@ get_anno_exam <- function(huva_expression, study="ALL", dataset="ALL") {
 
 #' Statistical analysis of annotation table for a selected gene of interest
 #'
-#' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @param param colName of the sample table to be used for the statistical analyisis
-#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets
+#' @title get_anno.stat_exam
+#' @description The get_anno.stat_exam function performs a statistical correlation between the GOI expression and
+#'              each of the parameters provided in the annotation table of a huva gene examination experiment .
+#' @param huva_expression huva_expression class object.
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @param param colName of the sample table to be used for the statistical analysis.
+#' @return list of statistics on the annotation data of the huva examination experiment.
+#' @seealso gene_exam, run_huva_experiment
 #' @examples
+#' library(huva)
+#' library(huva.db)
 #'
-#' 2+2
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' anno.stat_exam <- get_anno.stat_exam(huva_expression = gene_overview,
+#'                                      study = "FG500", dataset = "ALL")
 #'
 #' @export
-get_anno.stat_exam <- function(huva_expression, study="ALL", dataset="ALL", param="ALL"){
+get_anno.stat_exam <- function(huva_expression, study = "ALL", dataset = "ALL", param = "ALL"){
 
-  if (class(huva_expression)!="huva_gene_examination") {
+  if (class(huva_expression)!= "huva_gene_examination") {
     error("Error: Use huva_gene_examination class object for reliable results")
   }
 
@@ -248,7 +286,7 @@ get_anno.stat_exam <- function(huva_expression, study="ALL", dataset="ALL", para
 
         }
 
-        if (length(levels(tmp_df$param))>2 & length(levels(tmp_df$param))!=length(tmp_df$param)){
+        if (length(levels(tmp_df$param))>2 & length(levels(tmp_df$param))!= length(tmp_df$param)){
 
           p.val <- summary(aov(expression~param, data = tmp_df))[[1]][["Pr(>F)"]][1]
           type <- "one-way-anova"
@@ -277,21 +315,33 @@ get_anno.stat_exam <- function(huva_expression, study="ALL", dataset="ALL", para
 
 #' Plot of annotation table parameters for a selected gene of interest
 #'
-#' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets
-#' @examples
-#'
-#' 2+2
-#'
+#' @title get_anno.plot_exam
+#' @description Correlations in a huva gene examination experiment can be graphically visualized with the
+#'              get_anno.plot_exam function, whose format produces an output containing a list of graphical objects.
+#' @param huva_expression huva_expression class object.
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @return The function returns a plot list based on the annotation table.
+#' @seealso gene_exam, run_huva_experiment
 #' @import ggplot2
 #' @import ggpubr
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' anno.plot_exam <- get_anno.plot_exam(huva_expression = gene_overview,
+#'                                      study = "FG500",
+#'                                      dataset = "FG500_whole_blood")
+#'
+#' anno.plot_exam$weight
+#'
 #' @export
-get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
+get_anno.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL"){
 
-  if (class(huva_expression)!="huva_gene_examination") {
-    error("Error: Use huva_gene_examination class object for reliable results")
+  if (class(huva_expression)!= "huva_gene_examination") {
+    error("Error: Use huva_gene_examination class object for reliable results.")
   }
 
   if (paste(study, collapse = "")=="ALL") {
@@ -312,7 +362,7 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
 
           colnames(tmp)[colnames(tmp)==j] <- "param"
 
-          plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+          plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
             geom_point() + theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name)) + stat_cor(method = "pearson")
 
         }
@@ -322,7 +372,7 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
           tmp <- data_anno
 
           colnames(tmp)[colnames(tmp)==j] <- "param"
-          plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+          plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
             geom_boxplot()+ theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name))
 
         }
@@ -359,7 +409,7 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
 
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_point() + theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name)) + stat_cor(method = "pearson")
 
           }
@@ -369,7 +419,7 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
             tmp <- data_anno
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_boxplot()+ theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name))
 
           }
@@ -404,7 +454,7 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
 
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_point() + theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name)) + stat_cor(method = "pearson")
 
           }
@@ -414,7 +464,7 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
             tmp <- data_anno
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_boxplot()+ theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name))
 
           }
@@ -439,18 +489,28 @@ get_anno.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
 
 #' Metadata table parameters for a selected gene of interest
 #'
-#' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets
+#' @title get_meta_exam
+#' @description The function provides metadata table parameters for a selected gene of interest used in a huva
+#'              gene examination experiment.
+#' @param huva_expression huva_expression class object.
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets.
+#' @seealso gene_exam, run_huva_experiment
 #' @examples
+#' library(huva)
+#' library(huva.db)
 #'
-#' 2+2
+#' gene_overview <- gene_exam(huva_dataset = huva.db,
+#'                            gene = "MYD88")
+#'
+#' meta.table_exam <- get_meta_exam(huva_expression = gene_overview,
+#'                                  study = "FG500")
 #'
 #' @export
-get_meta_exam <- function(huva_expression, study="ALL", dataset="ALL") {
+get_meta_exam <- function(huva_expression, study = "ALL", dataset = "ALL") {
 
-  if (class(huva_expression)!="huva_gene_examination") {
+  if (class(huva_expression)!= "huva_gene_examination") {
     error("Error: Use huva_gene_examination class object for reliable results")
   }
 
@@ -479,19 +539,29 @@ get_meta_exam <- function(huva_expression, study="ALL", dataset="ALL") {
 
 #' Metadata table parameters for a selected gene of interest
 #'
+#' @title get_meta.stat_exam
+#' @description Huva examination experiment statistical analysis of the influence of provided metadata on the expression of a gene of
+#'              interest (GOI) is performed by the function get_meta.stat_exam which reports it on a data.frame or list of data.frames.
 #' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @param param colName of the sample table to be used for the statistical analyisis
-#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @param param colName of the sample table to be used for the statistical analysis.
+#' @return list of statistics on the metadata of the huva examination experiment.
+#' @seealso gene_exam, run_huva_experiment
 #' @examples
+#' library(huva)
+#' library(huva.db)
 #'
-#' 2+2
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' meta.stat_exam <- get_meta.stat_exam(huva_expression = gene_overview,
+#'                                      study = "FG500",
+#'                                      dataset = "FG500_whole_blood_cellcount")
 #'
 #' @export
-get_meta.stat_exam <- function(huva_expression, study="ALL", dataset="ALL", param="ALL"){
+get_meta.stat_exam <- function(huva_expression, study = "ALL", dataset = "ALL", param = "ALL"){
 
-  if (class(huva_expression)!="huva_gene_examination") {
+  if (class(huva_expression)!= "huva_gene_examination") {
     error("Error: Use huva_gene_examination class object for reliable results")
   }
 
@@ -591,21 +661,33 @@ get_meta.stat_exam <- function(huva_expression, study="ALL", dataset="ALL", para
 
 #' Metadata table parameters for a selected gene of interest
 #'
-#' @param huva_expression huva_expression class object
-#' @param study charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")
-#' @param dataset charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")
-#' @return data.frame or list of the annotation data of a selected gene of interest across the available datasets
-#' @examples
-#'
-#' 2+2
-#'
+#' @title get_meta.plot_exam
+#' @description The get_meta.plot_exam function will quickly provide a list of metadata-based graphical objects in
+#'              a huva examination experiment.
+#' @param huva_expression huva_expression class object.
+#' @param study character vector defining the studies to be used in the analysis (default = "ALL").
+#' @param dataset character vector defining the datasets to be used in the analysis (default = "ALL").
+#' @return The function returns a plot list based on the annotation table.
+#' @seealso gene_exam, run_huva_experiment
 #' @import ggplot2
 #' @import ggpubr
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
+#'
+#' meta.plot_exam <- get_meta.plot_exam(huva_expression = gene_overview,
+#'                                      study = "FG500",
+#'                                      dataset = "FG500_whole_blood_cellcount")
+#'
+#' meta.plot_exam$`Monocytes (CD14+)`
+#'
 #' @export
-get_meta.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
+get_meta.plot_exam <- function(huva_expression, study = "ALL", dataset = "ALL"){
 
-  if (class(huva_expression)!="huva_gene_examination") {
-    error("Error: Use huva_gene_examination class object for reliable results")
+  if (class(huva_expression)!= "huva_gene_examination") {
+    error("Error: Use huva_gene_examination class object for reliable results.")
   }
 
   if (paste(study, collapse = "")=="ALL") {
@@ -636,7 +718,7 @@ get_meta.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
           tmp <- data_metadata
 
           colnames(tmp)[colnames(tmp)==j] <- "param"
-          plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+          plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
             geom_boxplot()+ theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name))
 
         }
@@ -673,7 +755,7 @@ get_meta.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
 
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_point() + theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name)) + stat_cor(method = "pearson")
 
           }
@@ -683,7 +765,7 @@ get_meta.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
             tmp <- data_metadata
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_boxplot()+ theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name))
 
           }
@@ -718,7 +800,7 @@ get_meta.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
 
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_point() + theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name)) + stat_cor(method = "pearson")
 
           }
@@ -728,7 +810,7 @@ get_meta.plot_exam <- function(huva_expression, study="ALL", dataset="ALL"){
             tmp <- data_metadata
 
             colnames(tmp)[colnames(tmp)==j] <- "param"
-            plot <- ggplot(tmp, aes(x=param, y=expression))+ xlab(j) +
+            plot <- ggplot(tmp, aes(x = param, y = expression))+ xlab(j) +
               geom_boxplot()+ theme_minimal() + theme(aspect.ratio = 1) + ggtitle(paste(huva_expression$gene_name))
 
           }

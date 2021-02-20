@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_misc.R
 \name{generate_huva_dataset}
 \alias{generate_huva_dataset}
-\title{Preparation of a new huva_dataset with independent data}
+\title{generate_huva_dataset}
 \usage{
 generate_huva_dataset(
   dataset_name,
@@ -13,25 +13,42 @@ generate_huva_dataset(
 )
 }
 \arguments{
-\item{dataset_name}{charachter name for the new huva dataset generated}
+\item{dataset_name}{character name for the new huva dataset.}
 
-\item{data}{dataset data}
+\item{data}{dataset input data.}
 
-\item{annotation}{dataset annotation}
+\item{annotation}{dataset annotation table.}
 
-\item{metadata}{if NULL no metadata will be added}
+\item{metadata}{if NULL no metadata will be added.}
 
-\item{combine}{LOGICAL, if TRUE the new dataset will be combined with the huva default dataset}
+\item{combine}{LOGICAL, if TRUE the new dataset will be combined with the huva default dataset.}
 }
 \value{
 The sum of \code{x} and \code{y}.
 }
 \description{
-Preparation of a new huva_dataset with independent data
+This function provides a new dataset including expression data, sample annotation
+             and possible metadata to run a huva experiment with novel data.
+}
+\details{
+Preparation of a new huva_dataset with user-defined data
 }
 \examples{
-# This will generate a combined dataset with new data and the data provided in the huva package
+library(huva)
+library(huva.db)
 
-2+2
+data_FG <- huva.db$FG500$data
+anno_FG <- huva.db$FG500$anno
+meta_FG <- huva.db$FG500$metadata
 
+new_huva.db <- generate_huva_dataset(dataset_name = "newdata",
+                                     data = "data_FG",
+                                     annotation = "anno_FG",
+                                     metadata = "meta_FG",
+                                     combine = FALSE)
+
+
+}
+\seealso{
+run_huva_experiment
 }

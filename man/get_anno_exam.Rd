@@ -2,25 +2,38 @@
 % Please edit documentation in R/huva_explore_examination.R
 \name{get_anno_exam}
 \alias{get_anno_exam}
-\title{Annotation table for a selected gene of interest}
+\title{get_anno_exam}
 \usage{
 get_anno_exam(huva_expression, study = "ALL", dataset = "ALL")
 }
 \arguments{
-\item{huva_expression}{huva_expression class object}
+\item{huva_expression}{huva_expression class object.}
 
-\item{study}{charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")}
+\item{study}{character vector defining the studies to be used in the analysis (default = "ALL").}
 
-\item{dataset}{charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")}
+\item{dataset}{character vector defining the datasets to be used in the analysis (default = "ALL").}
 }
 \value{
-data.frame or list of the annotation data of a selected gene of interest across the available datasets
+data.frame or list of the annotation data of a selected gene of interest across the available datasets.
 }
 \description{
+This function exports the comprehensive table reporting all the available annotation parameters
+             for the selected dataset in a huva gene examination experiment.
+}
+\details{
 Annotation table for a selected gene of interest
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
 
+anno_exam <- get_anno_exam(huva_expression = gene_overview,
+                           study = "CEDAR",
+                           dataset = "CEDAR_CD4T")
+
+}
+\seealso{
+gene_exam, run_huva_experiment
 }

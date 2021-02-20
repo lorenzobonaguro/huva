@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_explore_examination.R
 \name{get_anno.stat_exam}
 \alias{get_anno.stat_exam}
-\title{Statistical analysis of annotation table for a selected gene of interest}
+\title{get_anno.stat_exam}
 \usage{
 get_anno.stat_exam(
   huva_expression,
@@ -12,22 +12,34 @@ get_anno.stat_exam(
 )
 }
 \arguments{
-\item{huva_expression}{huva_expression class object}
+\item{huva_expression}{huva_expression class object.}
 
-\item{study}{charachter or charachter vector defining the studies to be used in the analysis (default = "ALL")}
+\item{study}{character vector defining the studies to be used in the analysis (default = "ALL").}
 
-\item{dataset}{charachter or charachter vector defining the datasets to be used in the analysis (default = "ALL")}
+\item{dataset}{character vector defining the datasets to be used in the analysis (default = "ALL").}
 
-\item{param}{colName of the sample table to be used for the statistical analyisis}
+\item{param}{colName of the sample table to be used for the statistical analysis.}
 }
 \value{
-data.frame or list of the annotation data of a selected gene of interest across the available datasets
+list of statistics on the annotation data of the huva examination experiment.
 }
 \description{
+The get_anno.stat_exam function performs a statistical correlation between the GOI expression and
+             each of the parameters provided in the annotation table of a huva gene examination experiment .
+}
+\details{
 Statistical analysis of annotation table for a selected gene of interest
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+gene_overview <- gene_exam(huva_dataset = huva.db, gene = "MYD88")
 
+anno.stat_exam <- get_anno.stat_exam(huva_expression = gene_overview,
+                                     study = "FG500", dataset = "ALL")
+
+}
+\seealso{
+gene_exam, run_huva_experiment
 }

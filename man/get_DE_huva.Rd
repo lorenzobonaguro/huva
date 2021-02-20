@@ -15,28 +15,55 @@ get_DE_huva(
 )
 }
 \arguments{
-\item{huva_exp}{huva experiment class object}
+\item{huva_exp}{huva experiment class object.}
 
-\item{study}{character vector defining the names of the study to be visualized}
+\item{study}{character vector defining the name of the studies to be visualised.}
 
-\item{dataset}{if NULL (default) all datasets will be used}
+\item{dataset}{if NULL (default) all datasets will be used.}
 
-\item{pval}{p-value cut-off used for the definition of differential expression}
+\item{pval}{p-value cutoff used for the definition of differential expression.}
 
-\item{logFC}{log2 fold change cut-off for the definition of differential expression}
+\item{logFC}{log2 fold change cutoff for the definition of differential expression.}
 
-\item{cluster_col}{TRUE defaul}
+\item{cluster_col}{heatmap column clustering option, default is TRUE.}
 
-\item{PC}{character vetor defining the PC to be plotted (c("PC1", "PC2"), default)}
+\item{PC}{character vector defining the principal components to be plotted, default is c("PC1", "PC2").}
 }
 \value{
-table of deferentially expressed genes in the comparison between the binned samples
+table of differentially expressed genes in the comparison between binned samples.
 }
 \description{
+The function get_DE_huva returns the list of differentially expressed genes between groups of the specified huva experiment.In this function, the p-value (pval) and logFC (logFC) cutoffs can also be specified (default is logFC=1). Along with providing the DE genes table, this function also performs the Principal Component Analysis (PCA), which can be plotted over the desidered components (PC, default = c("PC1", "PC2")).
+}
+\details{
 get_DE_huva
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+DE_huva <- get_DE_huva(huva_exp = binned_dataset,
+                       study = "FG500",
+                       dataset = "FG500_whole_blood")
+
+#Plot PCA
+DE_huva$PCA_FG500_PBMC
+
+#Plot Histogram
+DE_huva$plot_FG500_PBMC
+
+#Plot HM of DE genes
+plot_HM(DE_huva$HM_FG500_PBMC)
+
+}
+\seealso{
+run_huva_experiment
 }

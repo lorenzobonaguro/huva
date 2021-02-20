@@ -1,30 +1,53 @@
 #' Calculate huva experiment on the expression variance of a selected gene of interest
 #'
+#' @title In population expression variance of a selected gene of interest.
+#' @description run_huva_experiment calculates the expression variance of a selected gene of interest.
 #' @param data huva_dataset class object.
-#' @param gene gene name used for the analysis
+#' @param gene gene name used for the analysis.
 #' @param quantiles definition of the quantile of segregation of the samples, quantiles are always simmetrical
-#'     between high and low groups (e.g. \code{quantile 0.1} will use the 10th and 90th percentiles)
+#'     between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default
+#'     (quantile 0.1 will use the 10th and 90th percentiles).
 #' @param gs_list class list object defining gene sets to be included in the analysis (to generate this file see
-#'     the documentation of fgse)
-#' @param summ bolean. define if the summary of the huva experiment will be calculated
-#' @param datasets_list characher vector used to filter the dataset in the data objet for the analysis
-#' @param adjust.method p value adjustment method used to corret the DE genes analysis
+#'     the documentation of fgse).
+#' @param summ default is TRUE, it defines if the summary of the huva experiment will be calculated.
+#' @param datasets_list character vector used to filter the dataset in the data object for the analysis.
+#' @param adjust.method p value adjustment method used to correct the DE genes analysis.
+#' @details The huva (human variation) package takes advantage of population-scale multi-omics data to infer gene
+#'     function and relationship between phenotype and gene expression. Within a reference dataset, huva derives
+#'     two experimental groups, i.e. individuals with "low" or "high" expression of the GOI, enabling the subsequent
+#'     comparison of their transcriptional profile and functional parameters. This approach robustly identifies the
+#'     biological relevance of a GOI and predicts the phenotype of naturally occurring loss- and gain-of-function
+#'     mutations in humans. The huva experiment is performed consecutively on all the included datasets.
+#'     Differential expression analysis is performed using the limma R package using the experimental groups in the
+#'     design model, p value correction for multiple tests and fold change cut-off for each experiment reported.
+#'     GSEA within the huva function is performed with the R package fgsea with standard setting (1000 random
+#'     permutations), the gene rank used for GSEA is calculated according to the log2 fold change in the comparison
+#'     between the low and high groups. The results of the huva experiment are collected in a huva_experiment
+#'     R object used as input for next provided functions to explore the output for each dataset.
 #' @return huva_experiment
-#' @examples
-#'
-#' 2+2
-#'
 #' @import limma
 #' @import fgsea
 #' @import Rmisc
 #' @import ggpubr
 #' @import reshape2
 #' @import huva.db
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' binned_dataset <- run_huva_experiment(data = huva.db,
+#'                                      gene = "MYD88",
+#'                                      quantiles = 0.10,
+#'                                      gs_list = hallmarks_V7.2,
+#'                                      summ = TRUE,
+#'                                      datasets_list = NULL,
+#'                                      adjust.method = "none")
+#'
 #' @export
-run_huva_experiment <- function(data=datasets, gene, quantiles, gs_list,summ=T, datasets_list=NULL, adjust.method="none") {
+run_huva_experiment <- function(data = datasets, gene, quantiles, gs_list, summ = T, datasets_list = NULL, adjust.method = "none") {
 
-  if (class(data)!="huva_dataset") {
-    error("Use huva_dataset class object to run the huva_experiment function")
+  if (class(data)!= "huva_dataset") {
+    error("Use huva_dataset class object to run the huva_experiment function.")
   }
 
   container <- list()
@@ -64,7 +87,7 @@ run_huva_experiment <- function(data=datasets, gene, quantiles, gs_list,summ=T, 
         design.mat <- model.matrix(~0+sample)
         colnames(design.mat) <- levels(sample)
 
-        contrast.matrix <- makeContrasts(Diff= low - high, levels = design.mat)
+        contrast.matrix <- makeContrasts(Diff = low - high, levels = design.mat)
 
         fit <- lmFit (data_tmp, design.mat)
         fit <- contrasts.fit(fit, contrast.matrix)
@@ -75,9 +98,9 @@ run_huva_experiment <- function(data=datasets, gene, quantiles, gs_list,summ=T, 
 
         gse <- suppressWarnings(fgsea(pathways = gs_list,
                                       stats = rank,
-                                      minSize=1,
-                                      maxSize=Inf,
-                                      nperm=1000))
+                                      minSize = 1,
+                                      maxSize = Inf,
+                                      nperm = 1000))
 
         container[[i]][["anno"]][[paste(i,j, sep = "_")]] <- anno_tmp
         container[[i]][["data"]][[paste(i,j, sep = "_")]] <- data_tmp
@@ -118,7 +141,7 @@ run_huva_experiment <- function(data=datasets, gene, quantiles, gs_list,summ=T, 
 
           for (k in names(data[[i]][["metadata"]])) {
 
-            tmp_metadata <- merge(expr[expr$group != "none",], data[[i]][["metadata"]][[k]], by="row.names")
+            tmp_metadata <- merge(expr[expr$group != "none",], data[[i]][["metadata"]][[k]], by = "row.names")
 
             container[[i]][["metadata"]][[paste(i, j, k, sep = "_")]] <- tmp_metadata
 
@@ -128,7 +151,7 @@ run_huva_experiment <- function(data=datasets, gene, quantiles, gs_list,summ=T, 
               tmp_metadata <- suppressMessages(melt(tmp_metadata))
               tmp_metadata2 <- summarySE(tmp_metadata, groupvars = c("group", "variable"), measurevar = "value", na.rm = T)[,c(1,2,4)]
               tmp_metadata2 <- merge(tmp_metadata2[tmp_metadata2$group=="high",], tmp_metadata2[tmp_metadata2$group=="low",], by= "variable")
-              tmp_metadata2 <- data.frame(variable=tmp_metadata2$variable, high_mean=tmp_metadata2$value.x, low_mean=tmp_metadata2$value.y, fc_low_high=tmp_metadata2$value.y/tmp_metadata2$value.x)
+              tmp_metadata2 <- data.frame(variable = tmp_metadata2$variable, high_mean = tmp_metadata2$value.x, low_mean = tmp_metadata2$value.y, fc_low_high = tmp_metadata2$value.y/tmp_metadata2$value.x)
 
               # Calculate the pvalue
               tmp_metadata_pval <- compare_means(value~group, data = tmp_metadata, method = "t.test", paired = F, group.by = "variable", var.equal = FALSE, p.adjust.method = "none")
@@ -159,30 +182,49 @@ run_huva_experiment <- function(data=datasets, gene, quantiles, gs_list,summ=T, 
   return(container)
 }
 
-#' Summarise huva experiment in list or string
+#' Summarize huva experiment in list or string
 #'
-#' @param huva_experiment huva_experiment class object calculate with the run_huva experiment function.
-#' @param include_gene LOGIC. If TRUE genes fold change will be included in the summary
-#' @param include_gsea LOGIC. If TRUE NES and p value from GSEA will be included in the analysis
-#' @param include_metadata LOGIC. If TRUE metadata fold change in the two groups will be included in the summary
-#' @param gene_list Filter for genes to be included in the summary (charachter vector)
-#' @param metadata_list Filter for metadata tables to be included in the anaysis
-#' @param one_line_result LOGIC. If TRUE the summary will be transformed in a single string
-#' @return summary of huva_experiment
-#' @examples
-#'
-#' 2+2
-#'
+#' @title summary_huva_experiment
+#' @description This function summarizes the specified huva experiment in list or string.
+#' @param huva_experiment huva_experiment class object calculated with the run_huva experiment function.
+#' @param include_gene LOGIC. If TRUE gene fold change will be included in the summary.
+#' @param include_gsea LOGIC. If TRUE NES and p value from GSEA will be included in the analysis.
+#' @param include_metadata LOGIC. If TRUE metadata fold change in the two groups will be included in the summary.
+#' @param gene_list Filter for genes to be included in the summary (character vector).
+#' @param metadata_list Filter for metadata tables to be included in the analysis.
+#' @param one_line_result LOGIC. If TRUE the summary will be transformed in a single string.
+#' @return summary of huva_experiment (list or string)
+#' @seealso run_huva_experiment
 #' @import limma
 #' @import fgsea
 #' @import Rmisc
 #' @import ggpubr
 #' @import reshape2
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' binned_dataset <- run_huva_experiment(data = huva.db,
+#'                                      gene = "MYD88",
+#'                                      quantiles = 0.10,
+#'                                      gs_list = hallmarks_V7.2,
+#'                                      summ = TRUE,
+#'                                      datasets_list = NULL,
+#'                                      adjust.method = "none")
+#'
+#' summ <- summary_huva_experiment(huva_experiment = binned_dataset,
+#'                                 include_gene = TRUE,
+#'                                 include_gsea = TRUE,
+#'                                 include_metadata = TRUE,
+#'                                 gene_list = c(hallmarks_V7.2$HALLMARK_TNFA_SIGNALING_VIA_NFKB),
+#'                                 one_line_result = TRUE)
+#'
+#'
 #' @export
-summary_huva_experiment <- function(huva_experiment, include_gene=T, include_gsea=T, include_metadata=F, gene_list , metadata_list=NULL,one_line_result=F) {
+summary_huva_experiment <- function(huva_experiment, include_gene = T, include_gsea = T, include_metadata = F, gene_list, metadata_list = NULL, one_line_result = F) {
 
-  if (class(huva_experiment)!="huva_experiment") {
-    print("use huva_experiment class object for reliable results")
+  if (class(huva_experiment)!= "huva_experiment") {
+    print("Use huva_experiment class object for reliable results.")
   }
 
   container <- list()
@@ -191,7 +233,7 @@ summary_huva_experiment <- function(huva_experiment, include_gene=T, include_gse
 
     if (include_gene==T) {
 
-      data <- data.frame(gene_name=gene_list)
+      data <- data.frame(gene_name = gene_list)
       rownames(data) <- data$gene_name
 
       for (i in names(huva_experiment$summary$Rank)) {
@@ -218,7 +260,7 @@ summary_huva_experiment <- function(huva_experiment, include_gene=T, include_gse
       for (i in 1:length(huva_experiment$summary$gsea)) {
         #print(names(huva_experiment$summary$gsea[i]))
         tmp3 <- huva_experiment$summary$gsea[[i]][, c("pathway", "NES")]
-        gsea <- merge(gsea, tmp3, by="pathway")
+        gsea <- merge(gsea, tmp3, by = "pathway")
         colnames(gsea)[i+1] <- names(huva_experiment$summary$gsea[i])
       }
 
@@ -299,39 +341,54 @@ summary_huva_experiment <- function(huva_experiment, include_gene=T, include_gse
 
   else {
 
-    print("huva_experimet do not contain summarized results")
+    print("huva_experiment does not contain summarized results.")
 
   }
 }
 
-#' Calculate huva experiment on the variance of a seleted metadata paramiter
+#' Calculate huva experiment on the variance of a selected metadata parameter
 #'
+#' @title run_huva_phenotype
+#' @description This function calculates a huva experiment on the variance of a selected metadata parameter.
 #' @param data huva_dataset class object.
-#' @param phenotype gene name used for the analysis
+#' @param phenotype gene name used for the analysis.
 #' @param quantiles definition of the quantile of segregation of the samples, quantiles are always simmetrical
-#'     between high and low groups (e.g. \code{quantile 0.1} will use the 10th and 90th percentiles)
+#'     between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default
+#'     (quantile 0.1 will use the 10th and 90th percentiles).
 #' @param gs_list class list object defining gene sets to be included in the analysis (to generate this file see
-#'     the documentation of fgse)
-#' @param metadata_table name of the metadata table in wich the selected paramiter can be found
-#' @param study defines the study to be used in the analysis
-#' @param summ default TRUE, define if the summary of the huva experiment will be calculated
-#' @param adjust.method p value adjustment method used to corret the DE genes analysis
-#' @return huva_experiment based on the segregaation of the phenotype
-#' @examples
-#'
-#' 2+2
-#'
+#'     the documentation of fgse).
+#' @param metadata_table name of the metadata table in which the selected parameter can be found.
+#' @param study defines the study to be used in the analysis.
+#' @param summ default is TRUE, it defines if the summary of the huva experiment will be calculated.
+#' @param adjust.method p value adjustment method used to correct the DE genes analysis.
+#' @details The huva experiment can be performed, instead of querying on a specific gene, on a selected
+#'     dataset-annotated phenotype (e.g., Monocytes(CD14+)). This is done by the function run_huva_phenotype.
+#'     The downstream analyses mimicry the workflow proposed in the gene-based huva experiment.
+#' @return huva_experiment based on the segregation of the phenotype.
+#' @seealso run_huva_experiment
 #' @import limma
 #' @import fgsea
 #' @import Rmisc
 #' @import ggpubr
 #' @import reshape2
 #' @import stats
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' binned_dataset <- run_huva_phenotype(data = huva.db,
+#'                                     phenotype = "Monocytes (CD14+)",
+#'                                     study = "FG500",
+#'                                     metadata_table = "cellcount",
+#'                                     quantiles = 0.1,
+#'                                     gs_list = hallmarks_V7.2)
+#'
+#'
 #' @export
-run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles, gs_list, summ=T, adjust.method="none") {
+run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles, gs_list, summ = T, adjust.method = "none") {
 
-  if (class(data)!="huva_dataset") {
-    print("Use huva_dataset class object for reliable results")
+  if (class(data)!= "huva_dataset") {
+    print("Use huva_dataset class object for reliable results.")
   }
 
   container <- list()
@@ -344,7 +401,7 @@ run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles
 
   if (phenotype %in% colnames(data[["metadata"]][[metadata_table]])==F) {
 
-    print("selected phenotype not found in the metadata table")
+    print("Selected phenotype not found in the metadata table.")
 
   }
 
@@ -363,7 +420,7 @@ run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles
     #q3 <- paste(paste(unlist(strsplit(j, "_"))[-1], collapse = "_"), sep = "_")
     #q4 <- paste(paste(unlist(strsplit(j, "_"))[-1], collapse = "_"), sep = "_")
 
-    anno_tmp <- merge(x=binning[binning$group != "none",], y=data[["anno"]][[j]], by="row.names")
+    anno_tmp <- merge(x = binning[binning$group != "none",], y=data[["anno"]][[j]], by = "row.names")
 
     data_tmp <- data[["data"]][[j]][, anno_tmp$Row.names]
 
@@ -371,7 +428,7 @@ run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles
     design.mat <- model.matrix(~0+sample)
     colnames(design.mat) <- levels(sample)
 
-    contrast.matrix <- makeContrasts(Diff= low - high, levels = design.mat)
+    contrast.matrix <- makeContrasts(Diff = low - high, levels = design.mat)
 
     fit <- lmFit (data_tmp, design.mat)
     fit <- contrasts.fit(fit, contrast.matrix)
@@ -384,9 +441,9 @@ run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles
 
     gse <- suppressWarnings(fgsea(pathways = gs_list,
                                   stats = rank,
-                                  minSize=1,
-                                  maxSize=Inf,
-                                  nperm=1000))
+                                  minSize = 1,
+                                  maxSize = Inf,
+                                  nperm = 1000))
 
     container[[study]][["anno"]][[paste(study, j, sep = "_")]] <- anno_tmp
     container[[study]][["data"]][[paste(study, j, sep = "_")]] <- data_tmp
@@ -440,8 +497,8 @@ run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles
         tmp_metadata$expression <- NULL
         tmp_metadata <- suppressMessages(melt(tmp_metadata))
         tmp_metadata2 <- summarySE(tmp_metadata, groupvars = c("group", "variable"), measurevar = "value", na.rm = T)[,c(1,2,4)]
-        tmp_metadata2 <- merge(tmp_metadata2[tmp_metadata2$group=="high",], tmp_metadata2[tmp_metadata2$group=="low",], by= "variable")
-        tmp_metadata2 <- data.frame(variable=tmp_metadata2$variable, high_mean=tmp_metadata2$value.x, low_mean=tmp_metadata2$value.y, fc_low_high=tmp_metadata2$value.y/tmp_metadata2$value.x)
+        tmp_metadata2 <- merge(tmp_metadata2[tmp_metadata2$group=="high",], tmp_metadata2[tmp_metadata2$group=="low",], by = "variable")
+        tmp_metadata2 <- data.frame(variable = tmp_metadata2$variable, high_mean = tmp_metadata2$value.x, low_mean = tmp_metadata2$value.y, fc_low_high = tmp_metadata2$value.y/tmp_metadata2$value.x)
 
         # Calculate the pvalue
         tmp_metadata_pval <- compare_means(value~group, data = tmp_metadata, method = "t.test", paired = F, group.by = "variable", var.equal = FALSE, p.adjust.method = "none")
@@ -467,40 +524,57 @@ run_huva_phenotype <- function(data, phenotype, study, metadata_table, quantiles
 
 #' Calculate huva experiment on variance in the signature enrichment of a provided gene set
 #'
+#' @title run_huva_signature
+#' @description In the huva signature experiment the enrichment for a selected signature gene set is used to stratify the samples in two experimental groups (i.e. high and low).
 #' @param data huva_dataset class object.
-#' @param gene_set signature vector to be used for the definition of high and low groups
-#' @param GSVA.method method for single sample signature enrichment, see ?gsva for options
+#' @param gene_set signature vector to be used for the definition of high and low groups.
+#' @param GSVA.method method for single sample signature enrichment, see ?gsva for options.
 #' @param quantiles definition of the quantile of segregation of the samples, quantiles are always simmetrical
-#'     between high and low groups (e.g. \code{quantile 0.1} will use the 10th and 90th percentiles)
+#'     between high and low groups. If not differently stated, a quantile of 0.1 (10%) is employed as default
+#'     (quantile 0.1 will use the 10th and 90th percentiles).
 #' @param gs_list class list object defining gene sets to be included in the analysis (to generate this file see
-#'     the documentation of fgse)
-#' @param summ bolean. define if the summary of the huva experiment will be calculated
-#' @param datasets_list characher vector used to filter the dataset in the data objet for the analysis
-#' @param adjust.method p value adjustment method used to corret the DE genes analysis
+#'     the documentation of fgse).
+#' @param summ default is TRUE, it defines if the summary of the huva experiment will be calculated.
+#' @param datasets_list character vector used to filter the dataset in the data object for the analysis.
+#' @param adjust.method p value adjustment method used to correct the DE genes analysis.
+#' @details In a huva signature experiment, the enrichment for a selected signature gene set is used to stratify
+#'     the samples in the two groups (i.e. high and low).This is performed by the function run_huva_signature.
+#'     The downstream analyses mimicry the workflow proposed in the gene-based huva experiment.
 #' @return huva_experiment
-#' @examples
-#'
-#' 2+2
-#'
+#' @seealso run_huva_experiment
 #' @import limma
 #' @import fgsea
 #' @import Rmisc
 #' @import ggpubr
 #' @import reshape2
 #' @import GSVA
+#' @examples
+#' library(huva)
+#' library(huva.db)
+#'
+#' binned_dataset <- run_huva_signature(data = huva.db,
+#'                                     gene_set = hallmarks_V7.2$HALLMARK_WNT_BETA_CATENIN_SIGNALING,
+#'                                     GSVA.method =  "gsva",
+#'                                     quantiles = 0.10,
+#'                                     gs_list = hallmarks_V7.2,
+#'                                     summ = TRUE,
+#'                                     datasets_list = NULL,
+#'                                     adjust.method = "none")
+#'
+#'
 #' @export
-run_huva_signature <- function(data=huva_default_dataset, gene_set, quantiles, gs_list,summ=T, datasets_list=NULL, adjust.method="none", GSVA.method="gsva") {
+run_huva_signature <- function(data = huva_default_dataset, gene_set, quantiles, gs_list,summ = T, datasets_list = NULL, adjust.method = "none", GSVA.method = "gsva") {
 
   gs <- list()
   gs$bin_gs <- gene_set
 
-  if (class(data)!="huva_dataset") {
-    error("Use huva_dataset class object to run the huva_experiment function")
+  if (class(data)!= "huva_dataset") {
+    error("Use huva_dataset class object to run the huva_experiment function.")
   }
 
   container <- list()
 
-  print(paste("Binning on selected signature", sep = ""))
+  print(paste("Binning on selected signature.", sep = ""))
 
   if (is.null(datasets_list)==F) {
     # This is to allow the selection of the datasets to use in the analysis
@@ -511,7 +585,7 @@ run_huva_signature <- function(data=huva_default_dataset, gene_set, quantiles, g
 
     for (j in names(data[[i]][["data"]])) {
 
-      expr <- suppressWarnings(gsva(data[[i]][["data"]][[j]], gset.idx.list = gs, method=GSVA.method))
+      expr <- suppressWarnings(gsva(data[[i]][["data"]][[j]], gset.idx.list = gs, method = GSVA.method))
       expr <- as.data.frame(t(expr))
       colnames(expr) <- c("expression")
 
@@ -526,7 +600,7 @@ run_huva_signature <- function(data=huva_default_dataset, gene_set, quantiles, g
       # q3 <- paste(paste(unlist(strsplit(j, "_"))[-1], collapse = "_"), sep = "_")
       # q4 <- paste(paste(unlist(strsplit(j, "_"))[-1], collapse = "_"), sep = "_")
 
-      anno_tmp <- merge(x= expr[expr$group != "none",], y= data[[i]][["anno"]][[j]], by="row.names")
+      anno_tmp <- merge(x = expr[expr$group != "none",], y = data[[i]][["anno"]][[j]], by = "row.names")
 
       data_tmp <- data[[i]][["data"]][[j]][, anno_tmp$Row.names]
 
@@ -534,7 +608,7 @@ run_huva_signature <- function(data=huva_default_dataset, gene_set, quantiles, g
       design.mat <- model.matrix(~0+sample)
       colnames(design.mat) <- levels(sample)
 
-      contrast.matrix <- makeContrasts(Diff= low - high, levels = design.mat)
+      contrast.matrix <- makeContrasts(Diff = low - high, levels = design.mat)
 
       fit <- lmFit (data_tmp, design.mat)
       fit <- contrasts.fit(fit, contrast.matrix)
@@ -545,9 +619,9 @@ run_huva_signature <- function(data=huva_default_dataset, gene_set, quantiles, g
 
       gse <- suppressWarnings(fgsea(pathways = gs_list,
                                     stats = rank,
-                                    minSize=1,
-                                    maxSize=Inf,
-                                    nperm=1000))
+                                    minSize = 1,
+                                    maxSize = Inf,
+                                    nperm = 1000))
 
       container[[i]][["anno"]][[paste(i, j, sep = "_")]] <- anno_tmp
       container[[i]][["data"]][[paste(i, j, sep = "_")]] <- data_tmp
@@ -597,8 +671,8 @@ run_huva_signature <- function(data=huva_default_dataset, gene_set, quantiles, g
             tmp_metadata$expression <- NULL
             tmp_metadata <- suppressMessages(melt(tmp_metadata))
             tmp_metadata2 <- summarySE(tmp_metadata, groupvars = c("group", "variable"), measurevar = "value", na.rm = T)[,c(1,2,4)]
-            tmp_metadata2 <- merge(tmp_metadata2[tmp_metadata2$group=="high",], tmp_metadata2[tmp_metadata2$group=="low",], by= "variable")
-            tmp_metadata2 <- data.frame(variable=tmp_metadata2$variable, high_mean=tmp_metadata2$value.x, low_mean=tmp_metadata2$value.y, fc_low_high=tmp_metadata2$value.y/tmp_metadata2$value.x)
+            tmp_metadata2 <- merge(tmp_metadata2[tmp_metadata2$group=="high",], tmp_metadata2[tmp_metadata2$group=="low",], by = "variable")
+            tmp_metadata2 <- data.frame(variable = tmp_metadata2$variable, high_mean = tmp_metadata2$value.x, low_mean = tmp_metadata2$value.y, fc_low_high = tmp_metadata2$value.y/tmp_metadata2$value.x)
 
             # Calculate the pvalue
             tmp_metadata_pval <- compare_means(value~group, data = tmp_metadata, method = "t.test", paired = F, group.by = "variable", var.equal = FALSE, p.adjust.method = "none")

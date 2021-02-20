@@ -2,7 +2,7 @@
 % Please edit documentation in R/huva_experiment.R
 \name{summary_huva_experiment}
 \alias{summary_huva_experiment}
-\title{Summarise huva experiment in list or string}
+\title{summary_huva_experiment}
 \usage{
 summary_huva_experiment(
   huva_experiment,
@@ -15,28 +15,50 @@ summary_huva_experiment(
 )
 }
 \arguments{
-\item{huva_experiment}{huva_experiment class object calculate with the run_huva experiment function.}
+\item{huva_experiment}{huva_experiment class object calculated with the run_huva experiment function.}
 
-\item{include_gene}{LOGIC. If TRUE genes fold change will be included in the summary}
+\item{include_gene}{LOGIC. If TRUE gene fold change will be included in the summary.}
 
-\item{include_gsea}{LOGIC. If TRUE NES and p value from GSEA will be included in the analysis}
+\item{include_gsea}{LOGIC. If TRUE NES and p value from GSEA will be included in the analysis.}
 
-\item{include_metadata}{LOGIC. If TRUE metadata fold change in the two groups will be included in the summary}
+\item{include_metadata}{LOGIC. If TRUE metadata fold change in the two groups will be included in the summary.}
 
-\item{gene_list}{Filter for genes to be included in the summary (charachter vector)}
+\item{gene_list}{Filter for genes to be included in the summary (character vector).}
 
-\item{metadata_list}{Filter for metadata tables to be included in the anaysis}
+\item{metadata_list}{Filter for metadata tables to be included in the analysis.}
 
-\item{one_line_result}{LOGIC. If TRUE the summary will be transformed in a single string}
+\item{one_line_result}{LOGIC. If TRUE the summary will be transformed in a single string.}
 }
 \value{
-summary of huva_experiment
+summary of huva_experiment (list or string)
 }
 \description{
-Summarise huva experiment in list or string
+This function summarizes the specified huva experiment in list or string.
+}
+\details{
+Summarize huva experiment in list or string
 }
 \examples{
+library(huva)
+library(huva.db)
 
-2+2
+binned_dataset <- run_huva_experiment(data = huva.db,
+                                     gene = "MYD88",
+                                     quantiles = 0.10,
+                                     gs_list = hallmarks_V7.2,
+                                     summ = TRUE,
+                                     datasets_list = NULL,
+                                     adjust.method = "none")
 
+summ <- summary_huva_experiment(huva_experiment = binned_dataset,
+                                include_gene = TRUE,
+                                include_gsea = TRUE,
+                                include_metadata = TRUE,
+                                gene_list = c(hallmarks_V7.2$HALLMARK_TNFA_SIGNALING_VIA_NFKB),
+                                one_line_result = TRUE)
+
+
+}
+\seealso{
+run_huva_experiment
 }
