@@ -12,16 +12,16 @@ url <- "https://github.com/lorenzobonaguro/huva"
 devtools::install_git(url = url)
 ```
 
-We provide also [docker containers](weblink) with *huva* and all dependencies already pre-installed.
+We provide also [docker containers](https://hub.docker.com/r/lorenzobonaguro/huva_docker) with *huva* and all dependencies already pre-installed.
 
 ## Usage
 For detailed information usage check the *huva vignette* and the documentation of each function
 
 ## How to cite *huva*
-If you use *huva* in your research project consider citing us: [Human variation in population-wide gene expression data predicts gene function and phenotype; Bonaguro at al. 2022](weblink).
+If you use *huva* in your research project consider citing us: [Human variation in population-wide gene expression data predicts gene perturbation phenotype; Bonaguro at al. 2022](https://www.cell.com/iscience/fulltext/S2589-0042(22)01600-5#%20).
 
 ## Contact or follow us
-For any problem of question regrding the *huva* package or this repository or you just want to be up to date on what is coming next, send us an [email](mailto:helphuva@uni-bonn.de) or follow us:  
+For any problem of question regrding the *huva* package or this repository or you just want to be up to date on what is coming next, send us an [email](mailto:lorenzobonaguro@uni-bonn.de) or follow us:  
 
 <img src="./logo/twitter.png" width="12%" style="float: left;">  
 
