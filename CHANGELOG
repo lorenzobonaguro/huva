@@ -24,3 +24,6 @@ huva R package - changelog
 	- Fixed bug in get_rank_huva with R4.0.X where the levels in the plot are not assigned correctly
 	- Fix rownames of the get_anno.stats_huva output for continous variables
 	- Added the p value and FC cut-off for the get_huva_DE function (defaults: pval = 0.05; logFC = 0)
+
+0.1.6 <-
+	- Fixed bug with generate.huva.db function, now working properly when merging with the default dataset (huva_default_dataset to huva.db)
